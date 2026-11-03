@@ -1,180 +1,187 @@
-# Red Bibosi
+# Red Bibosi — Edición Santa Cruz
 
-**Plataforma web comunitaria de denuncias ciudadanas y seguridad colaborativa** (estilo foro con votos y comentarios), orientada a **seguridad ciudadana y transparencia comunitaria** en Santa Cruz de la Sierra, Bolivia.
+**Foro web comunitario estilo Reddit** para reportes vecinales en **Santa Cruz de la Sierra, Bolivia**.  
+Acceso **libre y abierto**: cualquiera puede **leer**, ver el **mapa de alertas** y consultar denuncias **sin registrarse**.
 
-Nombre en producto del foro por zona: **Cuadra** (lo que corre hoy en este repo).
+> Nombre de la experiencia por zona en este repo: **Cuadra**. El producto / organización: **Red Bibosi**.
 
 ---
 
-## 1. Contexto y visión
+## 1. Contexto general
 
 | Campo | Definición |
 |-------|------------|
-| **Nombre** | Red Bibosi |
-| **Tipo** | Plataforma web comunitaria de denuncias y seguridad colaborativa |
-| **Categoría** | Seguridad ciudadana y transparencia comunitarias |
-| **Para quién** | Vecinos que necesitan alertar y enterarse a tiempo; instituciones que necesitan señales verificables |
+| **Proyecto** | Red Bibosi |
+| **Concepto** | Plataforma web comunitaria (foro + votos + comentarios + mapa) de reportes vecinales |
+| **Ciudad** | Santa Cruz de la Sierra, Bolivia |
+| **Acceso** | Lectura y consulta del mapa **sin login**. Publicar / votar puede requerir sesión técnica anónima (ver §6) |
 
-### Problema
+### Propósito
 
-Faltan canales **directos**, con identidad protegida y **geolocalizados** (por barrio/zona) para alertar sobre inseguridad. La información sobre zonas peligrosas está dispersa, no estructurada o no llega a tiempo a los vecinos.
+Dar a los cruceños un canal **seguro, centralizado y de libre acceso** para denunciar:
 
-### Solución (arquitectura de producto)
+- hechos de **inseguridad**
+- fallas de **infraestructura** (p. ej. alumbrado)
+- problemas de su **zona**
 
-#### A. Feed principal (foro central)
+### Pilar: privacidad y anonimato
 
-Discusiones categorizadas por alerta inmediata:
+| Regla | Detalle |
+|-------|---------|
+| Denuncias **anónimas** | No se muestra quién publicó |
+| **Nunca** se expone | WhatsApp, nombre real, email, foto de perfil identificable u otro dato personal |
+| Ubicación pública | Solo **grilla** / zona (`grid_lat`, `grid_lng` o barrio). Coordenadas exactas **solo** en privado (servidor) |
+| Evidencia | Storage **privado**; no listar archivos en APIs públicas |
 
-| Categoría de producto | Qué cubre | Cómo se modela hoy en código |
-|-----------------------|-----------|------------------------------|
-| **Alertas de maleantes y ladrones** | Modus operandi, vehículos sospechosos, avisos comunitarios | Tipos: `robo`, `acoso` (ver contrato) |
-| **Zonas de peligro** | Poca iluminación, asaltos recurrentes, puntos ciegos | Casos por zona + **mapa agregado** (celdas, no domicilios) |
-| **Locales y clubes nocturnos** | Ruido, peleas, venta irregular, incidentes en/fuera del local | `is_establishment` + tipos `convivencia_nocturna`, etc. **Gate:** evidencia o 3 reportes independientes antes de publicar |
-
-#### B. Discusiones por zona (filtro geográfico)
-
-- Secciones por barrio / distrito / avenida de referencia (`zones`).
-- El usuario filtra denuncias de **su área** de residencia o trabajo.
-- En lo **público** solo se muestran coordenadas de **grilla** (`grid_lat` / `grid_lng`). La ubicación exacta queda en `reports_private` (servidor / roles privilegiados).
-
-Contrato técnico: [`docs/contracts.md`](docs/contracts.md) · Ownership: [`docs/ownership.md`](docs/ownership.md).
+A diferencia de grupos de WhatsApp o redes tradicionales, Red Bibosi **no** convierte al vecino en un dato público.
 
 ---
 
-## 2. Validá la idea (sí / no)
+## 2. Estructura de la plataforma
 
-Si marcás **no** en alguno, comentá en el PR: el repo se alinea a esta tabla.
+### A. Feed principal (categorías globales SCZ)
+
+Discusiones públicas estilo Reddit; la **votación** da visibilidad a lo más urgente:
+
+| Categoría | Contenido |
+|-----------|-----------|
+| **Maleantes y robos** | Modus operandi, vehículos sospechosos, alertas de asaltos |
+| **Zonas de peligro y alumbrado** | Áreas oscuras, terrenos baldíos, esquinas de alto riesgo, fallas de iluminación |
+| **Locales y boliches nocturnos** | Ruido, peleas, incidentes en/fuera de clubes o boliches |
+
+**Regla de establecimientos:** un señalamiento a un local no se publica sin **evidencia** o **3 reportes independientes** (ver [`docs/contracts.md`](docs/contracts.md)).
+
+### B. Discusiones por zona (distritos / barrios cruceños)
+
+Secciones por zona, por ejemplo:
+
+Equipetrol · Plan 3000 · Radial 26 · Villa 1º de Mayo · Urubó · 4to Anillo · (más en seed)
+
+El vecino filtra para ver **en tiempo casi real** lo de su barrio o ruta diaria — sin doxxing ni pin exacto en el mapa público.
+
+---
+
+## 3. Validá este contexto (sí / no)
 
 | # | Afirmación | ¿OK? |
 |---|------------|------|
-| 1 | Red Bibosi es un **foro comunitario** de denuncias/seguridad (estilo Reddit: publicaciones, votos, comentarios), no una app de persecución en vivo. | |
-| 2 | Hay **feed global** por categorías de alerta y **filtro por zona**. | |
-| 3 | Categorías v1 de producto: maleantes/ladrones, zonas de peligro, locales/clubes nocturnos. | |
-| 4 | Identidad pública = **pseudónimo** (no nombre legal). No se publican coords exactas. | |
-| 5 | Locales/establecimientos requieren **evidencia o 3 reportes independientes** antes de publicarse. | |
-| 6 | Stack fijo: **Next.js (App Router) + TypeScript en Vercel** y **Supabase** (Postgres, Auth, Storage privado, Realtime, RLS) + **GitHub Actions**. | |
-| 7 | El nombre de UI del foro por zona es **Cuadra**; el repo/organización se llama **Red Bibosi**. | |
+| 1 | Lectura + mapa + listado de denuncias **sin registro**. | |
+| 2 | Publicaciones **anónimas** hacia el público (cero WhatsApp / nombre real / PII). | |
+| 3 | Feed con 3 categorías: maleantes/robos · peligro/alumbrado · locales/boliches. | |
+| 4 | Filtro por zonas reales de Santa Cruz. | |
+| 5 | Votos para **visibilidad/urgencia** (estilo Reddit). | |
+| 6 | Stack: Next.js + Supabase + Vercel + GitHub Actions; secretos solo en `.env`. | |
 
 ---
 
-## 3. Stack y estructura (Fase 1 — hecha)
+## 4. Arquitectura (vista de arquitecto)
 
-### Stack
-
-| Capa | Tecnología |
-|------|------------|
-| Frontend | Next.js App Router, TypeScript, UI estilo foro (listados, votos, comentarios) |
-| API | Route handlers en `app/api/` |
-| Datos / Auth / Storage / Realtime | Supabase (Postgres + RLS; Storage privado para evidencia) |
-| Hosting / CI | Vercel · GitHub Actions |
-
-### Directorios
-
-```text
-app/(web)/          → UI Cuadra (inicio, zona, caso, publicar, mapa, seguimiento)
-app/api/            → API (posts, votos, seguimiento, mapa)
-components/         → Componentes de UI
-lib/client/         → Cliente Supabase + API browser
-lib/server/         → Lógica de servidor
-lib/validation/     → Validación / PII
-lib/types.ts        → Tipos compartidos (no redefinir)
-supabase/           → Migraciones, seed, RLS
-tests/              → Unit + RLS smoke
-docs/               → Contratos, ownership, labels
-.github/            → CI + plantillas issue/PR
+```mermaid
+flowchart TB
+  subgraph publico [Acceso libre sin login]
+    Web["Next.js app/(web)\nFeed · Zonas · Mapa · Caso"]
+  end
+  subgraph api [API App Router]
+    R["app/api\nGET públicos · POST controlados"]
+  end
+  subgraph data [Supabase]
+    PG[(Postgres + RLS)]
+    Auth[Auth opcional / anónima]
+    Stor[Storage privado evidencia]
+    RT[Realtime por zona]
+  end
+  Web --> R
+  R --> PG
+  R --> Auth
+  R --> Stor
+  PG --> RT
+  RT --> Web
 ```
 
-### Seguridad de secretos (obligatorio)
+| Capa | Ruta | Rol |
+|------|------|-----|
+| UI pública | `app/(web)/`, `components/`, `lib/client/` | Feed, zona, mapa, publicar, seguimiento |
+| API | `app/api/`, `lib/server/`, `lib/validation/` | Reglas, rate limit, privacidad |
+| Datos | `supabase/`, `tests/rls/` | Schema, RLS, seed de zonas SCZ |
+| Tipos | `lib/types.ts` | Contrato TS compartido |
+| CI / docs | `.github/`, `docs/` | Actions, contratos, definición |
 
-- Variables solo en `.env` / `.env.local` (nunca en código).
-- [`.gitignore`](.gitignore) ignora `.env*`, `node_modules`, builds, `.vercel`, etc.
-- [`.env.example`](.env.example) documenta nombres de variables **sin valores reales**.
-- Guía de reportes: [`SECURITY.md`](SECURITY.md).
+Hosting: **Vercel**. Datos/Auth/Storage: **Supabase**. Versionado: **GitHub**.
 
----
-
-## 4. Estado de módulos (Fase 2 — en curso)
-
-| Módulo | Estado | Notas |
-|--------|--------|-------|
-| Feed / publicaciones | Parcial | Listado por zona, detalle de caso, publicar |
-| Votos | Parcial | Corroboración (`value: 1`); **no** hay downvote tipo Reddit todavía |
-| Comentarios | Parcial en contrato/API | Ampliar UX según prioridad |
-| Categorías de denuncia | Parcial | Enums técnicos en contrato; mapear 1:1 a las 3 categorías de producto (pendiente de aprobación) |
-| Filtro por zona | Hecho (base) | `zones` + páginas `/zona/[slug]` |
-| Mapa agregado | Hecho (base) | Sin coords exactas |
-| Seguimiento / autoridad | Hecho (base) | Código de follow-up |
-
-Commits: `feat(web): …`, `feat(api): …`, `feat(data): …` en ramas `feat/…` → PR a `main`.
+Detalle: [`docs/arquitectura.md`](docs/arquitectura.md) · Definición: [`docs/definicion.md`](docs/definicion.md) · Contrato: [`docs/contracts.md`](docs/contracts.md).
 
 ---
 
-## 5. Checklist pre-push (Fase 3 — usar siempre)
+## 5. Seguridad y GitHub (cero filtraciones)
 
-Antes de cada `git push`:
+1. **Prohibido** hardcodear claves, tokens o credenciales.
+2. Secretos solo en `.env` / `.env.local` vía `process.env` / `NEXT_PUBLIC_*` (solo lo público).
+3. [`.gitignore`](.gitignore) ignora `.env*`, `node_modules`, builds, `.vercel`, temporales.
+4. [`.env.example`](.env.example) lista nombres de variables **sin valores**.
+5. Commits: [Conventional Commits](https://www.conventionalcommits.org/) · ramas `feat/…`, `fix/…`, `chore/…`, `docs/…`.
+
+Checklist pre-push:
 
 ```bash
 git status
-git diff --cached
-# Confirmar: no hay .env, .env.local, claves, dumps ni evidence real
+git diff --cached          # ¿hay .env o secretos? → SACARLOS
 npm run lint && npm run typecheck && npm test
+git push -u origin feat/mi-cambio
 ```
 
-- [ ] Ningún secreto en el diff
-- [ ] Ninguna coord exacta ni nombre propio en respuestas/UI públicas nuevas
-- [ ] Rama ≠ force-push a `main`
-- [ ] CI en mente: el workflow en `.github/workflows/ci.yml` corre lint, typecheck y tests
-
-Despliegue: Vercel enlazado al repo (preview por PR; producción desde `main` cuando el owner lo active).
+Más: [`CONTRIBUTING.md`](CONTRIBUTING.md) · [`SECURITY.md`](SECURITY.md).
 
 ---
 
-## 6. Arranque local y Git
+## 6. Estado actual vs este contexto
+
+| Requisito del contexto | En el repo hoy | Gap |
+|------------------------|----------------|-----|
+| Leer / mapa sin login | `GET` de posts/mapa pensados públicos | Verificar RLS + UI sin forzar auth en lectura |
+| Denuncia anónima al público | Existe `author_id` nullable + pseudónimo en perfiles | **Alinear producto:** no mostrar autor; publicar sin PII |
+| 3 categorías de feed | 5 `incident_type` técnicos | Mapear o renombrar (decisión pendiente) |
+| Votos tipo Reddit (urgencia) | Voto de corroboración `value: 1` | ¿Up/down o score de urgencia? Requiere contrato |
+| Zonas SCZ | Seed con zonas ejemplo | Ampliar catálogo (Equipetrol, Plan 3000, …) |
+| Infraestructura / alumbrado | Cubierto en categoría de producto | Puede faltar enum dedicado |
+
+---
+
+## 7. Arranque y versionado (paso a paso)
 
 ```bash
 git clone https://github.com/Angelitotech23/Red-Bibosi.git
 cd Red-Bibosi
-cp .env.example .env.local    # completar valores reales solo en local
+cp .env.example .env.local   # completar en local, nunca commitear
 npm install
-npm run dev
+npm run dev                  # http://localhost:3000
 ```
 
-Primera conexión / push seguro (si partís de cero en otra máquina):
+Flujo seguro a GitHub:
 
 ```bash
-git remote add origin https://github.com/Angelitotech23/Red-Bibosi.git
-git checkout -b feat/mi-cambio
-# …cambios…
+git checkout main
+git pull origin main
+git checkout -b feat/nombre-corto
+# …cambios modulares…
 git add -A
-git status   # revisar que .env* NO esté staged
-git commit -m "feat(web): descripción breve"
-git push -u origin feat/mi-cambio
-# abrir PR hacia main — no push directo a main con secretos
+git status                   # confirmar: sin .env*
+git commit -m "feat(web): describe el cambio"
+git push -u origin feat/nombre-corto
+# Abrir PR → main. No force-push a main.
 ```
 
-Más: [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Despliegue: conectar el repo en Vercel; Preview por PR; Production desde `main` cuando el owner lo active. Variables sensibles solo en el panel de Vercel / Supabase, nunca en git.
 
 ---
 
-## 7. Principios no negociables
+## 8. Principios no negociables
 
-1. **Privacidad por diseño** — sin lat/lng exactos ni nombres propios en lo público.
-2. **Cero secretos en git.**
-3. **Moderación por evidencia** en señalamientos a establecimientos.
-4. **Transparencia de decisiones** — estados de caso visibles; contratos antes de improvisar schema/API.
-
----
-
-## 8. Decisiones pendientes (idea vs código)
-
-| Tema | Prompt de producto | Estado en repo | Acción |
-|------|--------------------|----------------|--------|
-| Nombre | Red Bibosi | README + repo GitHub | Alineado |
-| Votos up/down | Estilo Reddit | Solo corroborar (`1`) | ¿Agregar downvote? Requiere contrato |
-| 3 categorías de feed | Maleantes / Zonas peligro / Locales | 5 `incident_type` técnicos | Mapear o renombrar con OK |
-| Anonimato | Canal anónimo | Pseudónimo + privados | Documentado así a propósito |
-| Tracks Gov* | Un track seguridad+transparencia | README anterior listaba 4 Gov* | Este README prioriza la definición integrada; Gov* quedan como expansión futura |
+1. Acceso libre de **lectura**.  
+2. Anonimato y **cero PII** en lo público.  
+3. Mapa de **patrones**, no de personas ni pines exactos.  
+4. Cero secretos en el código.  
+5. Establecimientos: evidencia o corroboración múltiple antes de publicar.
 
 ---
 
-Red Bibosi no es un muro de quejas sin reglas: es un foro comunitario donde la alerta llega a tiempo al vecino — y solo pesa cuando se puede defender.
+Red Bibosi es el canal cruceño donde el barrio se entera a tiempo — sin quemar a quien avisa.
