@@ -1,110 +1,142 @@
 # RED Bibosi
 
-**Plataforma de innovación cívica para Santa Cruz de la Sierra:** conectamos a la ciudadanía con información y respuesta pública en riesgos, transparencia, salud y seguridad — sin vender datos ni exponer a quien reporta.
+**RED Bibosi** es la plataforma de innovación cívica para Santa Cruz de la Sierra.  
+**Cuadra** es el primer producto: un foro ciudadano de seguridad y convivencia **por zona**, donde el reporte se verifica antes de pesar, se puede derivar a una autoridad con código de seguimiento, y alimenta un mapa de patrones — no de personas.
+
+---
+
+## Validá esta idea (sí / no)
+
+Marcá mentalmente cada afirmación. Si alguna está mal, corregila en el PR o en un comentario: el resto del repo se alinea a esto.
+
+| # | Afirmación | ¿Correcto? |
+|---|------------|------------|
+| 1 | RED Bibosi **no** es solo “denuncias anónimas”: es una plataforma con tracks (GovRisk, GovTransparency, GovHealth, GovSecurity). | |
+| 2 | Lo que construimos **ahora** es **Cuadra** (GovSecurity). Los otros tracks reusan la base; no abren producto propio todavía. | |
+| 3 | Un caso vive en una **zona** (barrio/distrito). La UI pública muestra grilla (`grid_lat` / `grid_lng`), **nunca** la ubicación exacta. | |
+| 4 | Identidad pública = **pseudónimo**, no nombre legal. | |
+| 5 | Verificación = **votos de corroboración** y/o **evidencia** (Storage privado). | |
+| 6 | Contra un **establecimiento**: no se publica sin evidencia **o** 3 reportes independientes. | |
+| 7 | Se puede **derivar a autoridad**; el denunciante sigue el caso con un **código de seguimiento** (se muestra una vez; no se guarda en claro). | |
+| 8 | El mapa muestra **agregados / celdas**, no domicilios ni personas. | |
+| 9 | Tipos de incidente v1: robo, acoso, vandalismo, consumo en vía pública, convivencia nocturna. | |
+| 10 | Estados de caso: reportado → en verificación → corroborado → derivado → resuelto / sin respuesta. | |
+
+Detalle normativo: [`docs/contracts.md`](docs/contracts.md).
 
 ---
 
 ## Por qué existe
 
-Santa Cruz crece más rápido de lo que el Estado local puede escuchar. Los vecinos reportan inseguridad, ruido, acoso o daño en grupos de chat que no escalan a una autoridad con trazabilidad; las instituciones reciben señales tarde, incompletas o imposibles de priorizar. No publicamos aquí cifras que no podamos citar con fuente: el problema que resolvemos es de **canal, evidencia y agregación**, no de marketing del miedo.
+Hoy el vecino reporta en WhatsApp. La señal se pierde, no se corrobora y no llega a una mesa con trazabilidad. La institución, cuando escucha, recibe ruido sin evidencia ni prioridad.
 
-Si el reporte no se puede verificar, no sirve para decidir. Si se verifica pero se filtra la identidad o la ubicación exacta, destruimos la confianza que necesitamos para que la gente vuelva a reportar.
+El problema no es “más denuncias”. Es **canal + verificación + agregación** sin quemar a quien reporta.
+
+Si el caso no se puede verificar, no sirve para decidir.  
+Si se verifica pero filtramos identidad o coordenadas exactas, nadie vuelve a reportar.
 
 ## Nuestra apuesta
 
-Ganamos el tramo cívico donde hoy solo hay WhatsApp + planillas: **señales zonales verificables**, con corroboración, evidencia bajo llave y derivación a autoridad con código de seguimiento — y un mapa que muestra patrones, no personas.
+Competimos con el hueco entre el rumor de barrio y la decisión pública: **señales zonales que se pueden defender**.
 
-No competimos con redes sociales ni con portales genéricos de “denuncia anónima”. Competimos con el vacío entre el rumor de barrio y la mesa de decisión departamental. Ahí el producto que manda es Cuadra (GovSecurity); el resto de tracks reutiliza la misma base de confianza: identidad por pseudónimo, RLS, Storage privado y contratos explícitos.
+- No somos una red social.
+- No somos un buzón de “denuncia anónima” sin reglas.
+- Somos infraestructura cívica: pseudónimo, evidencia bajo llave, corroboración, derivación con seguimiento, mapa agregado.
 
-## Tracks y prioridades
+## Tracks — qué sí y qué no
 
-| Track | Resolvemos primero | No haremos todavía |
-|-------|--------------------|--------------------|
-| **GovSecurity** | Cuadra: reportes por zona, votos, evidencia, seguimiento, mapa agregado | Persecución en tiempo real, doxxing “útil”, ranking de personas o negocios sin gate |
-| **GovRisk** | Modelo de alerta ciudadana reutilizando zonas + estados de caso | Centro de comando 24/7 ni integración total con sistemas propietarios de emergencia |
-| **GovTransparency** | Publicación de datos abiertos derivados de agregados (sin microdatos) | Scrapers masivos de todo el aparato departamental el día uno |
-| **GovHealth** | Señalización de fricción en acceso a servicios (colas, desabastecimiento) por zona | Historia clínica, telemedicina clínica ni datos de pacientes |
+| Track | Ahora | Todavía no |
+|-------|-------|------------|
+| **GovSecurity → Cuadra** | Reportes por zona, votos, evidencia, seguimiento, mapa | Perseguir personas, ranking de negocios sin gate, doxxing |
+| **GovRisk** | Misma base de zonas/estados para alertas futuras | Centro de comando 24/7 |
+| **GovTransparency** | Agregados abiertos más adelante | Scrapers masivos día 1 |
+| **GovHealth** | Señales de fricción por zona más adelante | Datos clínicos / pacientes |
 
-**Prioridad de capital y de código hoy: GovSecurity → Cuadra.** Los otros tracks heredan arquitectura; no abren frentes que rompan privacidad o foco.
+**Foco de código y capital hoy: Cuadra.**
 
 ## Producto actual: Cuadra
 
-Foro ciudadano de **seguridad y convivencia por zona**. Flujo: reportar → verificar (corroboración / evidencia) → opcionalmente derivar a autoridad con **código de seguimiento** → alimentar un **mapa agregado** sin personas ni coordenadas exactas.
+```text
+Publicar caso (zona + tipo + texto + ubicación)
+        ↓
+Guardar exacto en privado | público solo en grilla
+        ↓
+Verificar (votos y/o evidencia)  —  si es establecimiento: gate
+        ↓
+Derivar a autoridad (opcional) + código de seguimiento
+        ↓
+Mapa agregado (patrones, no personas)
+```
 
-| Estado | Qué hay |
-|--------|---------|
-| **Construido (base en `main`)** | App Router Next.js; API de posts, votos, seguimiento y mapa; schema Supabase + RLS + triggers; UI de zonas, casos, publicar, mapa y seguimiento; cliente con fallback a mocks si la API no está live; CI (lint, typecheck, tests) |
-| **Mock / degradación** | Datos y RPC de mapa pueden caer a mocks (`lib/client/mocks`, `lib/server/mocks`) cuando no hay backend configurado |
-| **Sigue** | Cerrar contratos pendientes (C-01…C-08), endurecer gate de establecimientos en producción, Realtime por zona, Storage de evidencia end-to-end, métricas de producto cableadas |
+| Estado | Qué hay en el repo |
+|--------|--------------------|
+| **Hecho en `main`** | Next.js App Router; API (posts, votos, seguimiento, mapa); schema + RLS; UI zonas/casos/publicar/mapa/seguimiento; CI |
+| **Degradación** | Sin Supabase configurado, el cliente/API pueden usar mocks |
+| **Sigue** | Contratos C-01…C-08, gate de establecimientos en prod, Realtime por zona, evidencia end-to-end, métricas cableadas |
 
-Contrato y ownership: [`docs/contracts.md`](docs/contracts.md) · [`docs/ownership.md`](docs/ownership.md).
-
-## Arquitectura en una vista
+## Arquitectura (una vista)
 
 ```mermaid
 flowchart LR
-  Ciudadano -->|HTTPS| Web["Next.js App Router\napp/(web)"]
-  Web --> API["Route handlers\napp/api"]
-  API --> Lib["lib/server\nvalidación + servicios"]
-  Lib --> SB[(Supabase\nPostgres+PostGIS · Auth\nStorage privado · Realtime)]
-  SB -->|RLS| Lib
-  API -->|PostPublic\nsin lat/lng exactos| Web
-  Web --> Mapa["Mapa agregado\ngrid_lat / grid_lng"]
+  Ciudadano --> Web["app/(web) · Cuadra"]
+  Web --> API["app/api"]
+  API --> Server["lib/server + validation"]
+  Server --> SB[(Supabase: Postgres · Auth · Storage · Realtime · RLS)]
+  API -->|"PostPublic sin lat/lng exactos"| Web
+  Web --> Mapa["Mapa agregado"]
 ```
 
-| Capa | Rol |
-|------|-----|
-| `app/(web)/`, `components/`, `lib/client/` | UI y cliente |
-| `app/api/`, `lib/server/`, `lib/validation/` | API y reglas de servidor |
-| `supabase/`, `tests/rls/` | Datos, RLS, seed |
-| `lib/types.ts` | Tipos compartidos — no redefinir |
-| Vercel + GitHub Actions | Hosting y CI |
+| Carpeta | Para qué |
+|---------|----------|
+| `app/(web)/`, `components/`, `lib/client/` | Frontend |
+| `app/api/`, `lib/server/`, `lib/validation/` | API y reglas |
+| `supabase/`, `tests/rls/` | Datos y RLS |
+| `lib/types.ts` | Tipos compartidos |
+| `docs/contracts.md`, `docs/ownership.md` | Contrato y dominio por agente |
+
+Stack: Next.js + TypeScript en Vercel · Supabase · GitHub Actions.
 
 ## Principios no negociables
 
-1. **Privacidad por diseño** — ninguna respuesta pública con lat/lng exactos ni nombres propios de personas o negocios en texto libre.
-2. **Cero secretos en el código** — `.env*` reales fuera de git; solo `.env.example`.
-3. **Moderación por evidencia** — un establecimiento no se publica sin evidencia o 3 reportes independientes.
-4. **Transparencia de decisiones** — estados de caso visibles; acciones de moderación auditadas; contratos escritos antes que “magia” en el PR.
+1. Privacidad por diseño — sin coords exactas ni nombres propios en lo público.
+2. Cero secretos en git — solo `.env.example`.
+3. Moderación por evidencia — gate de establecimientos.
+4. Decisiones auditables — estados visibles, moderación registrada, contrato antes que improvisar.
 
 ## Hoja de ruta
 
-| Horizonte | Entrega | Éxito medible |
-|-----------|---------|---------------|
-| **Ahora** | Cuadra usable en preview: publicar, listar por zona, votar, seguimiento, mapa agregado; CI verde; contratos documentados | Flujos felices en preview sin filtrar PII; `lint` + `typecheck` + `test` en verde en `main` |
-| **Próximos 3 meses** | Evidencia en Storage privado; gate de establecimientos en prod; Realtime por zona; primeras derivaciones con autoridad piloto | ≥1 zona piloto con autoridad respondiendo; 0 incidentes de filtración de coords exactas; rate limits activos |
-| **12 meses** | Escalado multi-zona SCZ; agregados abiertos (GovTransparency); plantillas de señal GovRisk/GovHealth sobre la misma base | Cobertura de zonas acordada con gobierno local; datasets agregados publicados; reuso de componentes de caso en otro track |
+| Horizonte | Entrega | Éxito |
+|-----------|---------|-------|
+| **Ahora** | Cuadra usable en preview + CI verde | Flujos felices sin filtrar PII |
+| **3 meses** | Evidencia, gate en prod, Realtime, autoridad piloto | ≥1 zona con respuesta oficial; 0 filtraciones de coords |
+| **12 meses** | Multi-zona SCZ + primers de otros tracks sobre la misma base | Cobertura acordada; agregados publicables |
 
-## Métricas que nos importan
+## Métricas (sin inventar cifras)
 
-No inventamos baselines. Instrumentamos y después fijamos metas.
+| Qué | Cómo |
+|-----|------|
+| Casos publicados / zona / semana | `posts` con `publish_gate = published` |
+| Corroboración | votos únicos / posts elegibles |
+| Tiempo a respuesta oficial | `official_responses` − `posts.created_at` |
+| Gate de establecimientos | % no publicados vs total establecimientos |
+| Privacidad | postmortems; meta operativa = cero filtraciones |
+| Entrega | % CI verde en `main` |
 
-| Métrica | Cómo |
-|---------|------|
-| Casos publicados / zona / semana | Conteos desde `posts` con `publish_gate = published` |
-| Tasa de corroboración | Votos únicos / posts elegibles |
-| Tiempo a primera respuesta oficial | `official_responses.created_at - posts.created_at` |
-| % posts de establecimiento bloqueados por gate | `publish_gate` ≠ `published` vs total establecimientos |
-| Incidentes de privacidad | Postmortems; objetivo operativo: **cero** filtraciones de coords/PII |
-| Salud de entrega | % de runs CI verdes en `main`; tiempo de ciclo PR → merge |
-
-## Cómo arrancar y contribuir
+## Cómo arrancar
 
 ```bash
 git clone https://github.com/Angelitotech23/Red-Bibosi.git
 cd Red-Bibosi
-cp .env.example .env.local   # completa sin commitear
+cp .env.example .env.local
 npm install
 npm run dev
 ```
 
-Verificaciones: `npm run lint && npm run typecheck && npm test`.
+`npm run lint && npm run typecheck && npm test`
 
-Convención de ramas: `feat/`, `fix/`, `chore/`, `docs/`. Commits: `feat(api): …`.  
-Guías: [`CONTRIBUTING.md`](CONTRIBUTING.md) · [`SECURITY.md`](SECURITY.md) · [`docs/labels.md`](docs/labels.md).
-
-Limpieza de ramas/PRs viejos: propuesta en [`docs/limpieza-pendiente.md`](docs/limpieza-pendiente.md) — **no se ejecuta sin aprobación explícita**.
+Ramas: `feat/` · `fix/` · `chore/` · `docs/` · commits `feat(api): …`  
+Más: [`CONTRIBUTING.md`](CONTRIBUTING.md) · [`SECURITY.md`](SECURITY.md) · [`docs/labels.md`](docs/labels.md) · [`docs/limpieza-pendiente.md`](docs/limpieza-pendiente.md)
 
 ---
 
-RED Bibosi no es un muro de quejas. Es infraestructura para que Santa Cruz decida con señales que se pueden defender.
+Si la tabla **Validá esta idea** está bien, seguimos. Si no, corregí los puntos falsos: el contrato y el código deben obedecer a esa verdad, no al revés.
