@@ -62,6 +62,24 @@ insert into public.zones (id, slug, name, bbox) values
     'palmaira',
     'Palmaira (demo)',
     '{"sw":[-17.770,-63.210],"ne":[-17.750,-63.190],"note":"FICTICIO"}'::jsonb
+  ),
+  (
+    'a1000000-0000-4000-8000-00000000000b',
+    'radial_26',
+    'Radial 26 (demo)',
+    '{"sw":[-17.800,-63.180],"ne":[-17.770,-63.150],"note":"FICTICIO"}'::jsonb
+  ),
+  (
+    'a1000000-0000-4000-8000-00000000000c',
+    'villa_1ro_de_mayo',
+    'Villa 1º de Mayo (demo)',
+    '{"sw":[-17.830,-63.180],"ne":[-17.800,-63.150],"note":"FICTICIO"}'::jsonb
+  ),
+  (
+    'a1000000-0000-4000-8000-00000000000d',
+    '4to_anillo',
+    '4to Anillo (demo)',
+    '{"sw":[-17.800,-63.200],"ne":[-17.760,-63.160],"note":"FICTICIO"}'::jsonb
   )
 on conflict (slug) do update set
   name = excluded.name,

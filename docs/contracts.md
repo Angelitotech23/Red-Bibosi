@@ -310,8 +310,17 @@ Códigos HTTP usados: `200`, `201`, `204`, `400`, `401`, `403`, `404`, `409`, `4
 1. **Ninguna respuesta pública** incluye `lat` / `lng` exactos. Solo `grid_lat` / `grid_lng`.
 2. **Ninguna respuesta pública** incluye nombres propios de personas o negocios en campos de texto libre (`title`, `body`, comentarios, respuestas oficiales).
 3. `reports_private` y `evidence_path` solo vía server con RLS + rol adecuado.
-4. Pseudónimos sí son públicos; identidad legal / email nunca en payloads de foro.
-5. Validación server-side (y opcionalmente client hint) debe rechazar o redactar PII obvia (`422` con `code: "PII_NOT_ALLOWED"`).
+4. **Anonimato en capa pública:** `PostPublic` / vista `posts_public` **no** incluyen `author_id` ni `author_pseudonym`. Comentarios y respuestas oficiales públicas tampoco exponen autor; la UI usa etiquetas genéricas (“Vecino”, “Autoridad”). Pseudónimos quedan para perfiles internos / staff.
+5. Lectura del feed y del mapa es **pública** (`anon`) para posts con `publish_gate = published` (cualquier `post_status` de ciclo). Alta de reporte: sesión opcional o `create_post_anonymous` vía service role + rate limit.
+6. Validación server-side (y opcionalmente client hint) debe rechazar o redactar PII obvia (`422` con `code: "PII_NOT_ALLOWED"`).
+
+### Categorías de feed (UI) → `incident_type`
+
+| Categoría UI | Tipos |
+|--------------|-------|
+| Maleantes y robos | `robo`, `acoso` |
+| Zonas de peligro y alumbrado | `vandalismo`, `consumo_via_publica` |
+| Locales y boliches | `convivencia_nocturna` |
 
 ---
 

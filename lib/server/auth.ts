@@ -17,12 +17,29 @@ function extractBearer(req: Request): string | null {
   return token;
 }
 
+function mockAuthAllowed(): boolean {
+  return (
+    process.env.NODE_ENV !== "production" &&
+    process.env.ALLOW_MOCK_AUTH === "true"
+  );
+}
+
 /**
  * Resuelve el usuario autenticado desde Bearer o cookie sb-access-token.
- * Sin Supabase configurado, acepta header de desarrollo X-Mock-User-Id.
+ * Mock `X-Mock-User-Id` solo si NODE_ENV≠production y ALLOW_MOCK_AUTH=true.
  */
 export async function requireAuth(req: Request): Promise<AuthUser | null> {
+  return resolveAuth(req);
+}
+
+/** Igual que requireAuth pero permite null sin error (lectura/publicación anónima). */
+export async function optionalAuth(req: Request): Promise<AuthUser | null> {
+  return resolveAuth(req);
+}
+
+async function resolveAuth(req: Request): Promise<AuthUser | null> {
   if (!isSupabaseConfigured()) {
+    if (!mockAuthAllowed()) return null;
     const mockId = req.headers.get("x-mock-user-id");
     if (!mockId) return null;
     const profile = mockGetProfileById(mockId);
@@ -32,7 +49,6 @@ export async function requireAuth(req: Request): Promise<AuthUser | null> {
 
   const token =
     extractBearer(req) ??
-    // cookie simple de sesión (SSR/edge); el cliente real usará @supabase/ssr
     parseCookie(req.headers.get("cookie"), "sb-access-token");
 
   if (!token) return null;

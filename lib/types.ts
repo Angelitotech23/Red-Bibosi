@@ -78,11 +78,10 @@ export interface Post {
 }
 
 /**
- * Post en API pública: sin coords exactas ni campos privados.
- * Nunca incluir lat/lng exactos ni nombres propios (regla de privacidad).
+ * Post en API pública: sin coords exactas, sin author_id ni pseudónimo.
+ * Nunca incluir lat/lng exactos ni nombres propios (regla de privacidad / anonimato).
  */
-export type PostPublic = Omit<Post, never> & {
-  author_pseudonym?: string | null;
+export type PostPublic = Omit<Post, "author_id"> & {
   vote_count?: number;
 };
 
@@ -112,9 +111,8 @@ export interface Comment {
   deleted_at: string | null;
 }
 
-export type CommentPublic = Omit<Comment, "deleted_at"> & {
-  author_pseudonym?: string;
-};
+/** Comentario público: sin author_id ni pseudónimo (etiqueta genérica en UI). */
+export type CommentPublic = Omit<Comment, "deleted_at" | "author_id">;
 
 export interface OfficialResponse {
   id: string;
@@ -125,9 +123,8 @@ export interface OfficialResponse {
   created_at: string;
 }
 
-export type OfficialResponsePublic = OfficialResponse & {
-  author_pseudonym?: string;
-};
+/** Respuesta oficial pública: sin author_id; la UI muestra rol genérico. */
+export type OfficialResponsePublic = Omit<OfficialResponse, "author_id">;
 
 export interface FollowUpCode {
   id: string;

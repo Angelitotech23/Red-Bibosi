@@ -123,9 +123,6 @@ export function CaseThreadList({
                   <TypeBadge type={post.type} />
                   <StatusBadge status={post.status} />
                   <span>{formatCaseDate(post.created_at)}</span>
-                  {post.author_pseudonym ? (
-                    <span>por {post.author_pseudonym}</span>
-                  ) : null}
                 </div>
               </div>
             </li>

@@ -148,7 +148,7 @@ export function CaseDetail({ postId }: { postId: string }) {
         <TypeBadge type={post.type} />
         <StatusBadge status={post.status} />
         <span>{formatCaseDate(post.created_at)}</span>
-        {post.author_pseudonym ? <span>por {post.author_pseudonym}</span> : null}
+        <span className="muted">reporte anónimo</span>
       </div>
 
       <h1
@@ -189,8 +189,7 @@ export function CaseDetail({ postId }: { postId: string }) {
           </h2>
           <p style={{ margin: "0 0 0.5rem" }}>{official.body}</p>
           <p className="muted" style={{ margin: 0, fontSize: "0.88rem" }}>
-            {official.author_pseudonym ?? "Autoridad"} ·{" "}
-            {formatCaseDate(official.created_at)} · estado:{" "}
+            Autoridad · {formatCaseDate(official.created_at)} · estado:{" "}
             <StatusBadge status={official.status_after} />
           </p>
         </section>
@@ -206,7 +205,7 @@ export function CaseDetail({ postId }: { postId: string }) {
           <ul className="comment-list">
             {comments.map((c) => (
               <li key={c.id} className="comment-item">
-                <strong>{c.author_pseudonym ?? "vecino"}</strong>
+                <strong>Vecino</strong>
                 <span className="muted"> · {formatCaseDate(c.created_at)}</span>
                 <p style={{ margin: "0.35rem 0 0" }}>{c.body}</p>
               </li>

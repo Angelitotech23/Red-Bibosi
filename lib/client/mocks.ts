@@ -99,7 +99,6 @@ export const MOCK_ESTABLISHMENTS: EstablishmentPublic[] = [
 export const MOCK_POSTS: PostPublic[] = [
   {
     id: "p-1001",
-    author_id: "u-1",
     zone_id: "11111111-1111-4111-8111-111111111111",
     type: "robo",
     status: "en_verificacion",
@@ -111,12 +110,10 @@ export const MOCK_POSTS: PostPublic[] = [
     publish_gate: "published",
     created_at: "2026-11-02T23:10:00.000Z",
     updated_at: "2026-11-03T01:00:00.000Z",
-    author_pseudonym: "vecino_norte",
     vote_count: 4,
   },
   {
     id: "p-1002",
-    author_id: "u-2",
     zone_id: "11111111-1111-4111-8111-111111111111",
     type: "convivencia_nocturna",
     status: "reportado",
@@ -128,12 +125,10 @@ export const MOCK_POSTS: PostPublic[] = [
     publish_gate: "published",
     created_at: "2026-11-03T08:20:00.000Z",
     updated_at: "2026-11-03T08:20:00.000Z",
-    author_pseudonym: "cuadra_viva",
     vote_count: 2,
   },
   {
     id: "p-1003",
-    author_id: "u-3",
     zone_id: "22222222-2222-4222-8222-222222222222",
     type: "vandalismo",
     status: "corroborado",
@@ -145,12 +140,10 @@ export const MOCK_POSTS: PostPublic[] = [
     publish_gate: "published",
     created_at: "2026-11-01T14:00:00.000Z",
     updated_at: "2026-11-02T10:00:00.000Z",
-    author_pseudonym: "ojo_ciudadano",
     vote_count: 7,
   },
   {
     id: "p-1004",
-    author_id: "u-4",
     zone_id: "22222222-2222-4222-8222-222222222222",
     type: "acoso",
     status: "derivado",
@@ -162,12 +155,10 @@ export const MOCK_POSTS: PostPublic[] = [
     publish_gate: "published",
     created_at: "2026-10-30T19:40:00.000Z",
     updated_at: "2026-11-01T12:00:00.000Z",
-    author_pseudonym: "paso_seguro",
     vote_count: 11,
   },
   {
     id: "p-1005",
-    author_id: "u-5",
     zone_id: "33333333-3333-4333-8333-333333333333",
     type: "consumo_via_publica",
     status: "resuelto",
@@ -179,12 +170,10 @@ export const MOCK_POSTS: PostPublic[] = [
     publish_gate: "published",
     created_at: "2026-10-20T11:00:00.000Z",
     updated_at: "2026-10-28T16:00:00.000Z",
-    author_pseudonym: "madre_uv",
     vote_count: 9,
   },
   {
     id: "p-1006",
-    author_id: "u-6",
     zone_id: "44444444-4444-4444-8444-444444444444",
     type: "robo",
     status: "sin_respuesta",
@@ -196,12 +185,10 @@ export const MOCK_POSTS: PostPublic[] = [
     publish_gate: "published",
     created_at: "2026-10-25T17:30:00.000Z",
     updated_at: "2026-10-25T17:30:00.000Z",
-    author_pseudonym: "pedal_scz",
     vote_count: 1,
   },
   {
     id: "p-1007",
-    author_id: "u-7",
     zone_id: "55555555-5555-4555-8555-555555555555",
     type: "vandalismo",
     status: "reportado",
@@ -213,7 +200,6 @@ export const MOCK_POSTS: PostPublic[] = [
     publish_gate: "published",
     created_at: "2026-11-03T12:00:00.000Z",
     updated_at: "2026-11-03T12:00:00.000Z",
-    author_pseudonym: "tronco_activo",
     vote_count: 0,
   },
 ];
@@ -223,38 +209,30 @@ const MOCK_COMMENTS: Record<string, CommentPublic[]> = {
     {
       id: "c-1",
       post_id: "p-1001",
-      author_id: "u-8",
       body: "Yo también vi la moto dando vueltas esa noche. Ojalá instalen más luces.",
       created_at: "2026-11-03T00:10:00.000Z",
-      author_pseudonym: "luz_en_la_esquina",
     },
     {
       id: "c-2",
       post_id: "p-1001",
-      author_id: "u-9",
       body: "Corroboro: pasó cerca de las 20:40. Había otra persona filmando.",
       created_at: "2026-11-03T00:45:00.000Z",
-      author_pseudonym: "testigo_sur",
     },
   ],
   "p-1003": [
     {
       id: "c-3",
       post_id: "p-1003",
-      author_id: "u-10",
       body: "Las bancas quedaron inutilizables. Varios vecinos ya reportamos lo mismo.",
       created_at: "2026-11-01T18:00:00.000Z",
-      author_pseudonym: "plaza_limpia",
     },
   ],
   "p-1004": [
     {
       id: "c-4",
       post_id: "p-1004",
-      author_id: "u-11",
       body: "Gracias por publicar. La parada necesita presencia permanente en horas pico.",
       created_at: "2026-10-31T09:00:00.000Z",
-      author_pseudonym: "ruta_segura",
     },
   ],
 };
@@ -263,20 +241,16 @@ const MOCK_OFFICIAL: Record<string, OfficialResponsePublic> = {
   "p-1004": {
     id: "or-1",
     post_id: "p-1004",
-    author_id: "u-auth-1",
     body: "El caso fue derivado a la unidad de prevención. Se coordinará patrullaje en horarios de mayor afluencia.",
     status_after: "derivado",
     created_at: "2026-11-01T12:00:00.000Z",
-    author_pseudonym: "autoridad_distrital",
   },
   "p-1005": {
     id: "or-2",
     post_id: "p-1005",
-    author_id: "u-auth-1",
     body: "Intervención realizada con apoyo vecinal. El punto permanece bajo seguimiento semanal.",
     status_after: "resuelto",
     created_at: "2026-10-28T16:00:00.000Z",
-    author_pseudonym: "autoridad_distrital",
   },
 };
 
@@ -402,10 +376,8 @@ export async function mockCreateComment(
   const comment: CommentPublic = {
     id: `c-${Date.now()}`,
     post_id: postId,
-    author_id: "u-mock",
     body: body.trim(),
     created_at: new Date().toISOString(),
-    author_pseudonym: "tu_sesion",
   };
   MOCK_COMMENTS[postId] = [...(MOCK_COMMENTS[postId] ?? []), comment];
   return { comment: structuredClone(comment) };
@@ -438,7 +410,6 @@ export async function mockCreatePost(input: {
   const id = `p-${Date.now()}`;
   const post: PostPublic = {
     id,
-    author_id: "u-mock",
     zone_id: input.zone_id,
     type: input.type,
     status: "reportado",
@@ -450,7 +421,6 @@ export async function mockCreatePost(input: {
     publish_gate: "published",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    author_pseudonym: "tu_sesion",
     vote_count: 0,
   };
   MOCK_POSTS.unshift(post);

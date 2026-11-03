@@ -56,13 +56,12 @@ export function canUpdatePost(actor: Actor, post: PostRow): boolean {
   return post.author_id === actor.userId;
 }
 
-/** SELECT posts no publicados siendo anónimo */
+/**
+ * SELECT posts — feed público si publish_gate=published (cualquier status de ciclo).
+ * Pendientes de gate no son visibles para anon.
+ */
 export function canSelectPost(actor: Actor, post: PostRow): boolean {
-  const publicOk =
-    (post.status === "corroborado" ||
-      post.status === "derivado" ||
-      post.status === "resuelto") &&
-    post.publish_gate === "published";
+  const publicOk = post.publish_gate === "published";
 
   if (publicOk) return true;
   if (actor.role === "anon" || !actor.userId) return false;

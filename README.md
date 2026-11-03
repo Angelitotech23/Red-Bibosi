@@ -135,14 +135,14 @@ Más: [`CONTRIBUTING.md`](CONTRIBUTING.md) · [`SECURITY.md`](SECURITY.md).
 
 ## 6. Estado actual vs este contexto
 
-| Requisito del contexto | En el repo hoy | Gap |
-|------------------------|----------------|-----|
-| Leer / mapa sin login | `GET` de posts/mapa pensados públicos | Verificar RLS + UI sin forzar auth en lectura |
-| Denuncia anónima al público | Existe `author_id` nullable + pseudónimo en perfiles | **Alinear producto:** no mostrar autor; publicar sin PII |
-| 3 categorías de feed | 5 `incident_type` técnicos | Mapear o renombrar (decisión pendiente) |
-| Votos tipo Reddit (urgencia) | Voto de corroboración `value: 1` | ¿Up/down o score de urgencia? Requiere contrato |
-| Zonas SCZ | Seed con zonas ejemplo | Ampliar catálogo (Equipetrol, Plan 3000, …) |
-| Infraestructura / alumbrado | Cubierto en categoría de producto | Puede faltar enum dedicado |
+| Requisito del contexto | En el repo hoy | Gap restante |
+|------------------------|----------------|--------------|
+| Leer / mapa sin login | `GET /api/posts`, `/api/posts/[id]`, `/api/zones`, `/api/map` públicos | Configurar orígenes Auth en dashboard Supabase |
+| Denuncia anónima al público | Sin autor en capa pública; `POST` auth opcional + RPC anónima | Activar Anonymous Sign-In en Supabase si se quiere sesión opaca para votos |
+| 3 categorías de feed | Mapeo en `lib/client/feed-categories.ts` | UI de filtros por categoría (opcional) |
+| Votos tipo Reddit (urgencia) | Voto de corroboración `value: 1` (sigue requiriendo sesión) | Up/down / score — pendiente de contrato |
+| Zonas SCZ | Seed con Equipetrol, Plan 3000, Radial 26, Villa 1º de Mayo, 4to Anillo, … | Ampliar según operación |
+| Auditoría | [`docs/auditoria-supabase-vercel.md`](docs/auditoria-supabase-vercel.md) | C7–C10 pendientes |
 
 ---
 
