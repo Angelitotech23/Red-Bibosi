@@ -1,12 +1,22 @@
-/**
- * Placeholder UI — Agente C implementa el frontend.
- * Sin lógica de negocio en esta base.
- */
+import { ZoneList } from "@/components/ZoneList";
+
 export default function InicioPage() {
   return (
-    <main>
-      <h1>Cuadra</h1>
-      <p>Base del foro ciudadano — Santa Cruz, Bolivia.</p>
-    </main>
+    <div>
+      <section className="hero-block" aria-labelledby="brand-hero">
+        <h1 id="brand-hero">Cuadra</h1>
+        <p>
+          Foro ciudadano de seguridad y convivencia por zona en Santa Cruz.
+          Elige tu barrio para ver y publicar casos.
+        </p>
+      </section>
+
+      <section aria-labelledby="zonas-title">
+        <div className="section-head">
+          <h2 id="zonas-title">Zonas</h2>
+        </div>
+        <ZoneList />
+      </section>
+    </div>
   );
 }
