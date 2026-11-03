@@ -2,7 +2,7 @@
   "name": "cuadra",
   "version": "0.1.0",
   "private": true,
-  "description": "Foro ciudadano de seguridad y convivencia por zona — Santa Cruz, Bolivia",
+  "description": "RED Bibosi — plataforma de innovación cívica para Santa Cruz; producto Cuadra (GovSecurity)",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

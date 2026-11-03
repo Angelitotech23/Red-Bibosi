@@ -1,0 +1,51 @@
+name: Caso de track
+description: Caso de uso o historia ligada a un track Gov*
+title: "track: "
+labels: ["enhancement"]
+body:
+  - type: dropdown
+    id: track
+    attributes:
+      label: Track
+      options:
+        - GovRisk
+        - GovTransparency
+        - GovHealth
+        - GovSecurity
+    validations:
+      required: true
+  - type: input
+    id: actor
+    attributes:
+      label: Actor principal
+      placeholder: ciudadana, autoridad, moderador, operador departamental…
+    validations:
+      required: true
+  - type: textarea
+    id: need
+    attributes:
+      label: Necesidad
+      description: Qué necesita lograr y en qué contexto de Santa Cruz.
+    validations:
+      required: true
+  - type: textarea
+    id: flow
+    attributes:
+      label: Flujo mínimo viable
+      placeholder: "1. …\n2. …\n3. …"
+    validations:
+      required: true
+  - type: textarea
+    id: out_of_scope
+    attributes:
+      label: Fuera de alcance (ahora)
+      description: Qué NO haremos en esta entrega.
+    validations:
+      required: true
+  - type: textarea
+    id: privacy
+    attributes:
+      label: Implicaciones de privacidad / evidencia
+      description: Datos sensibles, agregación, RLS, evidencia.
+    validations:
+      required: true
