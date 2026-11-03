@@ -1,0 +1,48 @@
+name: Mejora
+description: Mejora de producto, DX o calidad (no es un bug)
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: dropdown
+    id: track
+    attributes:
+      label: Track / producto
+      options:
+        - GovSecurity — Cuadra
+        - GovRisk
+        - GovTransparency
+        - GovHealth
+        - Plataforma / DX
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema o fricción
+      description: Qué duele hoy y a quién.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Propuesta
+      description: Qué harías y qué no harías.
+    validations:
+      required: true
+  - type: textarea
+    id: success
+    attributes:
+      label: Criterio de éxito
+      description: Cómo sabemos que quedó bien (medible si es posible).
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Prioridad sugerida
+      options:
+        - ahora
+        - próximos 3 meses
+        - backlog 12 meses
+    validations:
+      required: true

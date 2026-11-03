@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Seguridad
+    url: https://github.com/Angelitotech23/Red-Bibosi/blob/main/SECURITY.md
+    about: Reporta vulnerabilidades en privado según SECURITY.md — no abras un issue público.
