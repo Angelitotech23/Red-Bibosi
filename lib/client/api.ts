@@ -54,6 +54,12 @@ async function parseError(res: Response): Promise<ApiClientError> {
   }
 }
 
+/**
+ * Usuario mock del store de Agente B (sin Supabase).
+ * Solo se envía en cliente; no es un secreto.
+ */
+const DEV_MOCK_USER_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, {
     ...init,
@@ -62,6 +68,7 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
       ...(init?.body instanceof FormData
         ? {}
         : { "Content-Type": "application/json" }),
+      "X-Mock-User-Id": DEV_MOCK_USER_ID,
       ...init?.headers,
     },
   });
@@ -81,15 +88,40 @@ function rethrowMock(err: unknown): never {
   throw err;
 }
 
-export async function fetchZones(): Promise<ZonesResponse> {
-  if (getApiMode() === "mock") {
-    try {
-      return await mockGetZones();
-    } catch (e) {
-      rethrowMock(e);
-    }
+async function runMock<T>(fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch (e) {
+    rethrowMock(e);
   }
-  return apiFetch<ZonesResponse>("/api/zones");
+}
+
+/**
+ * En `live`, intenta la API real; si el endpoint aún no existe (404),
+ * usa mock para no romper pantallas mientras B completa el contrato.
+ */
+async function liveWithMockFallback<T>(
+  live: () => Promise<T>,
+  mock: () => Promise<T>,
+): Promise<T> {
+  if (getApiMode() === "mock") {
+    return runMock(mock);
+  }
+  try {
+    return await live();
+  } catch (e) {
+    if (e instanceof ApiClientError && e.status === 404) {
+      return runMock(mock);
+    }
+    throw e;
+  }
+}
+
+export async function fetchZones(): Promise<ZonesResponse> {
+  return liveWithMockFallback(
+    () => apiFetch<ZonesResponse>("/api/zones"),
+    mockGetZones,
+  );
 }
 
 export async function fetchPosts(params: {
@@ -105,64 +137,49 @@ export async function fetchPosts(params: {
   if (params.status) query.set("status", params.status);
   if (params.cursor) query.set("cursor", params.cursor);
   if (params.limit) query.set("limit", String(params.limit));
+  const qs = query.toString();
 
-  if (getApiMode() === "mock") {
-    try {
-      return await mockListPosts({
+  return liveWithMockFallback(
+    () => apiFetch<ListPostsResponse>(`/api/posts${qs ? `?${qs}` : ""}`),
+    () =>
+      mockListPosts({
         zone_id: params.zone_id,
         type: params.type || undefined,
         status: params.status || undefined,
         cursor: params.cursor,
         limit: params.limit,
-      });
-    } catch (e) {
-      rethrowMock(e);
-    }
-  }
-  const qs = query.toString();
-  return apiFetch<ListPostsResponse>(`/api/posts${qs ? `?${qs}` : ""}`);
+      }),
+  );
 }
 
 export async function fetchPost(id: string): Promise<{ post: PostPublic }> {
-  if (getApiMode() === "mock") {
-    try {
-      return await mockGetPost(id);
-    } catch (e) {
-      rethrowMock(e);
-    }
-  }
-  return apiFetch<{ post: PostPublic }>(`/api/posts/${id}`);
+  return liveWithMockFallback(
+    () => apiFetch<{ post: PostPublic }>(`/api/posts/${id}`),
+    () => mockGetPost(id),
+  );
 }
 
 export async function fetchComments(
   postId: string,
 ): Promise<{ comments: CommentPublic[] }> {
-  if (getApiMode() === "mock") {
-    try {
-      return await mockGetComments(postId);
-    } catch (e) {
-      rethrowMock(e);
-    }
-  }
-  return apiFetch<{ comments: CommentPublic[] }>(
-    `/api/posts/${postId}/comments`,
+  return liveWithMockFallback(
+    () =>
+      apiFetch<{ comments: CommentPublic[] }>(
+        `/api/posts/${postId}/comments`,
+      ),
+    () => mockGetComments(postId),
   );
 }
 
 /**
  * Respuesta oficial del caso.
- * Contrato actual: no hay GET dedicado; en live se intenta campo del post
- * y, si no existe, se deja null (Solicitud S-01).
+ * Contrato: no hay GET dedicado (Solicitud S-01).
  */
 export async function fetchOfficialResponse(
   postId: string,
 ): Promise<{ response: OfficialResponsePublic | null }> {
   if (getApiMode() === "mock") {
-    try {
-      return await mockGetOfficialResponse(postId);
-    } catch (e) {
-      rethrowMock(e);
-    }
+    return runMock(() => mockGetOfficialResponse(postId));
   }
   try {
     const { post } = await apiFetch<{
@@ -170,7 +187,9 @@ export async function fetchOfficialResponse(
     }>(`/api/posts/${postId}`);
     return { response: post.official_response ?? null };
   } catch (e) {
-    if (e instanceof ApiClientError && e.status === 404) throw e;
+    if (e instanceof ApiClientError && e.status === 404) {
+      return runMock(() => mockGetOfficialResponse(postId));
+    }
     return { response: null };
   }
 }
@@ -178,19 +197,16 @@ export async function fetchOfficialResponse(
 export async function createVote(
   postId: string,
 ): Promise<{ vote: Vote; post: PostPublic }> {
-  if (getApiMode() === "mock") {
-    try {
-      return await mockCreateVote(postId);
-    } catch (e) {
-      rethrowMock(e);
-    }
-  }
-  return apiFetch<{ vote: Vote; post: PostPublic }>(
-    `/api/posts/${postId}/votes`,
-    {
-      method: "POST",
-      body: JSON.stringify({ value: 1 }),
-    },
+  return liveWithMockFallback(
+    () =>
+      apiFetch<{ vote: Vote; post: PostPublic }>(
+        `/api/posts/${postId}/votes`,
+        {
+          method: "POST",
+          body: JSON.stringify({ value: 1 }),
+        },
+      ),
+    () => mockCreateVote(postId),
   );
 }
 
@@ -198,19 +214,13 @@ export async function createComment(
   postId: string,
   body: string,
 ): Promise<{ comment: CommentPublic }> {
-  if (getApiMode() === "mock") {
-    try {
-      return await mockCreateComment(postId, body);
-    } catch (e) {
-      rethrowMock(e);
-    }
-  }
-  return apiFetch<{ comment: CommentPublic }>(
-    `/api/posts/${postId}/comments`,
-    {
-      method: "POST",
-      body: JSON.stringify({ body }),
-    },
+  return liveWithMockFallback(
+    () =>
+      apiFetch<{ comment: CommentPublic }>(`/api/posts/${postId}/comments`, {
+        method: "POST",
+        body: JSON.stringify({ body }),
+      }),
+    () => mockCreateComment(postId, body),
   );
 }
 
@@ -222,80 +232,68 @@ export async function createPost(input: {
   lat: number;
   lng: number;
   is_establishment: boolean;
-  /** Solo UI/mock hasta que el contrato acepte establishment_id */
   establishment_id?: string | null;
   evidence?: File | null;
 }): Promise<CreatePostResponse> {
-  if (getApiMode() === "mock") {
-    try {
-      return await mockCreatePost(input);
-    } catch (e) {
-      rethrowMock(e);
-    }
-  }
-  const form = new FormData();
-  form.set("zone_id", input.zone_id);
-  form.set("type", input.type);
-  form.set("title", input.title);
-  form.set("body", input.body);
-  form.set("lat", String(input.lat));
-  form.set("lng", String(input.lng));
-  form.set("is_establishment", String(input.is_establishment));
-  if (input.establishment_id) {
-    form.set("establishment_id", input.establishment_id);
-  }
-  if (input.evidence) {
-    form.set("evidence", input.evidence);
-  }
-  return apiFetch<CreatePostResponse>("/api/posts", {
-    method: "POST",
-    body: form,
-  });
+  return liveWithMockFallback(
+    async () => {
+      const form = new FormData();
+      form.set("zone_id", input.zone_id);
+      form.set("type", input.type);
+      form.set("title", input.title);
+      form.set("body", input.body);
+      form.set("lat", String(input.lat));
+      form.set("lng", String(input.lng));
+      form.set("is_establishment", String(input.is_establishment));
+      if (input.establishment_id) {
+        form.set("establishment_id", input.establishment_id);
+      }
+      if (input.evidence) {
+        form.set("evidence", input.evidence);
+      }
+      return apiFetch<CreatePostResponse>("/api/posts", {
+        method: "POST",
+        body: form,
+      });
+    },
+    () => mockCreatePost(input),
+  );
 }
 
 export async function lookupFollowUp(
   code: string,
 ): Promise<FollowUpLookupResponse> {
-  if (getApiMode() === "mock") {
-    try {
-      return await mockFollowUpLookup(code);
-    } catch (e) {
-      rethrowMock(e);
-    }
-  }
-  return apiFetch<FollowUpLookupResponse>("/api/follow-up/lookup", {
-    method: "POST",
-    body: JSON.stringify({ code }),
-  });
-}
-
-/** Endpoint pendiente de contrato (Solicitud S-02). */
-export async function fetchEstablishments(
-  zoneId?: string,
-): Promise<{ establishments: EstablishmentPublic[] }> {
-  if (getApiMode() === "mock") {
-    try {
-      return await mockListEstablishments(zoneId);
-    } catch (e) {
-      rethrowMock(e);
-    }
-  }
-  const qs = zoneId ? `?zone_id=${encodeURIComponent(zoneId)}` : "";
-  return apiFetch<{ establishments: EstablishmentPublic[] }>(
-    `/api/establishments${qs}`,
+  return liveWithMockFallback(
+    () =>
+      apiFetch<FollowUpLookupResponse>("/api/follow-up/lookup", {
+        method: "POST",
+        body: JSON.stringify({ code }),
+      }),
+    () => mockFollowUpLookup(code),
   );
 }
 
-/** Endpoint pendiente de contrato (Solicitud S-03). */
+/** Registro de establecimientos — endpoint pendiente (Solicitud S-02). */
+export async function fetchEstablishments(
+  zoneId?: string,
+): Promise<{ establishments: EstablishmentPublic[] }> {
+  const qs = zoneId ? `?zone_id=${encodeURIComponent(zoneId)}` : "";
+  return liveWithMockFallback(
+    () =>
+      apiFetch<{ establishments: EstablishmentPublic[] }>(
+        `/api/establishments${qs}`,
+      ),
+    () => mockListEstablishments(zoneId),
+  );
+}
+
+/** GET /api/map — disponible (Agente B). */
 export async function fetchMapCells(): Promise<{ cells: MapCellPublic[] }> {
-  if (getApiMode() === "mock") {
-    try {
-      return await mockGetMapCells();
-    } catch (e) {
-      rethrowMock(e);
-    }
-  }
-  return apiFetch<{ cells: MapCellPublic[] }>("/api/map/cells");
+  return liveWithMockFallback(
+    () =>
+      apiFetch<{ cells: MapCellPublic[]; k_threshold?: number }>("/api/map"),
+    mockGetMapCells,
+  );
 }
 
 export type { EstablishmentPublic, MapCellPublic };

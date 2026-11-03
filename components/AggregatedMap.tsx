@@ -27,10 +27,10 @@ function toPercent(lat: number, lng: number): { x: number; y: number } {
   };
 }
 
-function summarize(counts: Partial<Record<IncidentType, number>>): string {
-  return (Object.keys(counts) as IncidentType[])
-    .filter((k) => (counts[k] ?? 0) > 0)
-    .map((k) => `${INCIDENT_TYPE_LABELS[k]}: ${counts[k]}`)
+function summarize(byType: Partial<Record<IncidentType, number>>): string {
+  return (Object.keys(byType) as IncidentType[])
+    .filter((k) => (byType[k] ?? 0) > 0)
+    .map((k) => `${INCIDENT_TYPE_LABELS[k]}: ${byType[k]}`)
     .join(", ");
 }
 
@@ -54,10 +54,10 @@ export function AggregatedMap({ cells }: { cells: MapCellPublic[] }) {
                   height: size,
                   background: cellColor(cell.total),
                 }}
-                title={summarize(cell.counts)}
+                title={summarize(cell.by_type)}
               >
                 <span className="sr-only">
-                  Celda con {cell.total} casos. {summarize(cell.counts)}
+                  Celda con {cell.total} casos. {summarize(cell.by_type)}
                 </span>
                 <span aria-hidden="true">{cell.total}</span>
               </span>

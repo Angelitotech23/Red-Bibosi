@@ -18,12 +18,12 @@ export interface EstablishmentPublic {
   zone_id: string;
 }
 
-/** Celda agregada del mapa (contrato pendiente — ver Solicitudes). */
+/** Celda agregada del mapa — alineada con lib/server/grid.ts / GET /api/map. */
 export interface MapCellPublic {
   grid_lat: number;
   grid_lng: number;
-  counts: Partial<Record<IncidentType, number>>;
   total: number;
+  by_type: Partial<Record<IncidentType, number>>;
 }
 
 const NOW = "2026-11-03T18:00:00.000Z";
@@ -31,35 +31,35 @@ const NOW = "2026-11-03T18:00:00.000Z";
 export const MOCK_ZONES: ZonesResponse = {
   zones: [
     {
-      id: "z-equipetrol",
+      id: "11111111-1111-4111-8111-111111111111",
       slug: "equipetrol",
       name: "Equipetrol",
       bbox: { south: -17.78, west: -63.2, north: -17.75, east: -63.17 },
       created_at: NOW,
     },
     {
-      id: "z-plan-3000",
+      id: "22222222-2222-4222-8222-222222222222",
       slug: "plan_3000",
       name: "Plan 3000",
       bbox: { south: -17.82, west: -63.14, north: -17.78, east: -63.1 },
       created_at: NOW,
     },
     {
-      id: "z-uv-128",
+      id: "33333333-3333-4333-8333-333333333333",
       slug: "uv_128",
       name: "UV 128",
       bbox: { south: -17.8, west: -63.18, north: -17.77, east: -63.15 },
       created_at: NOW,
     },
     {
-      id: "z-las-palmas",
+      id: "44444444-4444-4444-8444-444444444444",
       slug: "las_palmas",
       name: "Las Palmas",
       bbox: { south: -17.76, west: -63.19, north: -17.74, east: -63.16 },
       created_at: NOW,
     },
     {
-      id: "z-el-tronco",
+      id: "55555555-5555-4555-8555-555555555555",
       slug: "el_tronco",
       name: "El Tronco",
       bbox: { south: -17.79, west: -63.22, north: -17.76, east: -63.19 },
@@ -72,27 +72,27 @@ export const MOCK_ESTABLISHMENTS: EstablishmentPublic[] = [
   {
     id: "est-001",
     registry_label: "Punto registrado SCZ-A-104",
-    zone_id: "z-equipetrol",
+    zone_id: "11111111-1111-4111-8111-111111111111",
   },
   {
     id: "est-002",
     registry_label: "Punto registrado SCZ-A-221",
-    zone_id: "z-equipetrol",
+    zone_id: "11111111-1111-4111-8111-111111111111",
   },
   {
     id: "est-003",
     registry_label: "Punto registrado SCZ-B-018",
-    zone_id: "z-plan-3000",
+    zone_id: "22222222-2222-4222-8222-222222222222",
   },
   {
     id: "est-004",
     registry_label: "Punto registrado SCZ-C-055",
-    zone_id: "z-uv-128",
+    zone_id: "33333333-3333-4333-8333-333333333333",
   },
   {
     id: "est-005",
     registry_label: "Punto registrado SCZ-D-090",
-    zone_id: "z-las-palmas",
+    zone_id: "44444444-4444-4444-8444-444444444444",
   },
 ];
 
@@ -100,7 +100,7 @@ export const MOCK_POSTS: PostPublic[] = [
   {
     id: "p-1001",
     author_id: "u-1",
-    zone_id: "z-equipetrol",
+    zone_id: "11111111-1111-4111-8111-111111111111",
     type: "robo",
     status: "en_verificacion",
     title: "Intento de hurto cerca de la avenida principal",
@@ -117,7 +117,7 @@ export const MOCK_POSTS: PostPublic[] = [
   {
     id: "p-1002",
     author_id: "u-2",
-    zone_id: "z-equipetrol",
+    zone_id: "11111111-1111-4111-8111-111111111111",
     type: "convivencia_nocturna",
     status: "reportado",
     title: "Ruido excesivo pasada la medianoche",
@@ -134,7 +134,7 @@ export const MOCK_POSTS: PostPublic[] = [
   {
     id: "p-1003",
     author_id: "u-3",
-    zone_id: "z-plan-3000",
+    zone_id: "22222222-2222-4222-8222-222222222222",
     type: "vandalismo",
     status: "corroborado",
     title: "Daños a mobiliario en la plaza del sector",
@@ -151,7 +151,7 @@ export const MOCK_POSTS: PostPublic[] = [
   {
     id: "p-1004",
     author_id: "u-4",
-    zone_id: "z-plan-3000",
+    zone_id: "22222222-2222-4222-8222-222222222222",
     type: "acoso",
     status: "derivado",
     title: "Acoso reiterado en parada de micro",
@@ -168,7 +168,7 @@ export const MOCK_POSTS: PostPublic[] = [
   {
     id: "p-1005",
     author_id: "u-5",
-    zone_id: "z-uv-128",
+    zone_id: "33333333-3333-4333-8333-333333333333",
     type: "consumo_via_publica",
     status: "resuelto",
     title: "Consumo problemático frente a la escuela",
@@ -185,7 +185,7 @@ export const MOCK_POSTS: PostPublic[] = [
   {
     id: "p-1006",
     author_id: "u-6",
-    zone_id: "z-las-palmas",
+    zone_id: "44444444-4444-4444-8444-444444444444",
     type: "robo",
     status: "sin_respuesta",
     title: "Hurto de bicicleta en vía secundaria",
@@ -202,7 +202,7 @@ export const MOCK_POSTS: PostPublic[] = [
   {
     id: "p-1007",
     author_id: "u-7",
-    zone_id: "z-el-tronco",
+    zone_id: "55555555-5555-4555-8555-555555555555",
     type: "vandalismo",
     status: "reportado",
     title: "Grafitis ofensivos en muro comunitario",
@@ -501,10 +501,10 @@ export async function mockGetMapCells(): Promise<{ cells: MapCellPublic[] }> {
     const cell = buckets.get(key) ?? {
       grid_lat: post.grid_lat,
       grid_lng: post.grid_lng,
-      counts: {},
+      by_type: {},
       total: 0,
     };
-    cell.counts[post.type] = (cell.counts[post.type] ?? 0) + 1;
+    cell.by_type[post.type] = (cell.by_type[post.type] ?? 0) + 1;
     cell.total += 1;
     buckets.set(key, cell);
   }

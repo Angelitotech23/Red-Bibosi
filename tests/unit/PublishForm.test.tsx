@@ -12,7 +12,7 @@ vi.mock("@/lib/client/api", async () => {
     fetchZones: vi.fn(async () => ({
       zones: [
         {
-          id: "z-equipetrol",
+          id: "11111111-1111-4111-8111-111111111111",
           slug: "equipetrol",
           name: "Equipetrol",
           bbox: null,
@@ -25,7 +25,7 @@ vi.mock("@/lib/client/api", async () => {
         {
           id: "est-001",
           registry_label: "Punto registrado SCZ-A-104",
-          zone_id: "z-equipetrol",
+          zone_id: "11111111-1111-4111-8111-111111111111",
         },
       ],
     })),
@@ -33,7 +33,7 @@ vi.mock("@/lib/client/api", async () => {
       post: {
         id: "p-new",
         author_id: "u-1",
-        zone_id: "z-equipetrol",
+        zone_id: "11111111-1111-4111-8111-111111111111",
         type: "robo",
         status: "reportado",
         title: "Prueba",

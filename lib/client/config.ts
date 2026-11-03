@@ -1,14 +1,17 @@
 /**
  * Modo de datos del cliente.
- * `mock` mientras la API (Agente B) no esté disponible en main.
- * Cambiar a `live` (o NEXT_PUBLIC_API_MODE=live) en commit aparte.
+ * - `mock`: datos simulados (default seguro sin backend completo).
+ * - `live`: llama a `/api/*`; si un endpoint aún no existe (404),
+ *   cae a mock solo en lecturas documentadas como pendientes.
  */
 export type ApiMode = "mock" | "live";
 
 export function getApiMode(): ApiMode {
   const raw = process.env.NEXT_PUBLIC_API_MODE;
+  if (raw === "mock") return "mock";
   if (raw === "live") return "live";
-  return "mock";
+  // Con API parcial en main, preferimos live + fallback por endpoint.
+  return "live";
 }
 
 export function getSupabasePublicConfig(): {
