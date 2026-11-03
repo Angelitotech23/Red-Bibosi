@@ -7,10 +7,8 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["tests/**/*.{test,spec}.{ts,tsx}"],
-    environmentMatchGlobs: [
-      ["tests/unit/**", "jsdom"],
-    ],
-    setupFiles: ["tests/unit/setup.ts"],
+    // Solo tests de componentes React usan jsdom (Node 20 en CI).
+    environmentMatchGlobs: [["tests/unit/**/*.test.tsx", "jsdom"]],
   },
   resolve: {
     alias: {
