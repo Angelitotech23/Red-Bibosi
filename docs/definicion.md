@@ -1,42 +1,40 @@
-# Definición integrada — Red Bibosi
+# Definición — Red Bibosi (Edición Santa Cruz)
 
-Fuente de producto alineada al prompt inicial. El detalle técnico vinculante sigue en [`contracts.md`](contracts.md).
+Fuente de producto. El detalle técnico vinculante: [`contracts.md`](contracts.md). Arquitectura: [`arquitectura.md`](arquitectura.md).
 
-## 1. Contexto y visión
+## Contexto
 
 - **Nombre:** Red Bibosi  
-- **Tipo:** Plataforma web comunitaria de denuncias ciudadanas y seguridad colaborativa (estilo Reddit).  
-- **Categoría:** Seguridad ciudadana y transparencia comunitarias.  
-- **Producto UI actual:** Cuadra (foro por zona en este repositorio).
+- **Concepto:** Foro web comunitario estilo Reddit de reportes vecinales en Santa Cruz de la Sierra, Bolivia.  
+- **Acceso:** Libre y abierto para **leer**, consultar el **mapa de alertas** y ver denuncias **sin registro**.  
+- **Producto UI en este repo:** Cuadra (foro por zona).
 
-## 2. Problema
+## Propósito
 
-Falta de canales directos, con identidad protegida y geolocalizados (por zona) para alertar sobre inseguridad en barrios. La información suele estar dispersa, no estructurada o llega tarde a los vecinos.
+Canal seguro, centralizado y de libre acceso para denunciar inseguridad, fallas de infraestructura y problemas de zona.
 
-## 3. Solución
+## Privacidad y anonimato
 
-### A. Feed principal
+- Denuncias **anónimas** de cara al público.  
+- **Nunca** exponer WhatsApp, nombre real ni datos personales del publicador.  
+- Coordenadas exactas solo en privado; público = zona / grilla.
 
-Categorías de alerta inmediata:
+## Estructura
 
-1. Alertas de maleantes y ladrones  
-2. Zonas de peligro  
-3. Locales y clubes nocturnos  
+### Feed principal
 
-### B. Discusiones por zona
+1. Maleantes y robos  
+2. Zonas de peligro y alumbrado  
+3. Locales y boliches nocturnos  
 
-Filtro geográfico por barrio/distrito/avenida; seguridad del área en near-real-time sin exponer ubicación exacta en público.
+Votación para dar visibilidad a lo urgente.
 
-## 4. Reglas GitHub / secretos
+### Por zona
 
-- Secretos solo en `.env` / `.env.local`  
-- `.gitignore` estricto + `.env.example` sin valores reales  
-- Checklist pre-push en el README principal  
+Filtro por distritos/barrios cruceños (Equipetrol, Plan 3000, Radial 26, Villa 1º de Mayo, Urubó, 4to Anillo, etc.).
 
-## 5. Fases
+## Reglas GitHub
 
-| Fase | Contenido | Estado |
-|------|-----------|--------|
-| A — Base | Stack, directorios, gitignore, env.example, CI | Hecha |
-| B — Módulos | Feed, votos, zonas, mapa | En curso |
-| C — Auditoría / deploy | Checklist secretos, README vivo, Vercel | Parcial |
+- Sin secretos en código; solo `.env` / `process.env`.  
+- `.gitignore` + `.env.example`.  
+- Ramas `feat/…` + Conventional Commits + PR a `main`.
