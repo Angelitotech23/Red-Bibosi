@@ -144,4 +144,19 @@ Edge Middleware público  →  evitar service role
 | ¿Schema soporta feed global + zonas sin cuellos? | **Zonas: sí (índices).** Feed por urgencia/votos y categorías de producto: **aún no.** Falta GET listado + modelo de score/categorías. |
 | ¿CORS Vercel vs Supabase? | **Sin choque en código same-origin.** Riesgo en **configuración de orígenes Auth/Realtime** del dashboard Supabase. |
 
-**Conclusión:** arquitectura base aprovechable, pero **no coherente aún** con “anonimato total + acceso libre”. Corregir C1–C5 antes de marketing/despliegue productivo.
+**Conclusión (pre-fix):** arquitectura base aprovechable, pero **no coherente aún** con “anonimato total + acceso libre”. Corregir C1–C5 antes de marketing/despliegue productivo.
+
+---
+
+## 6. Estado post-correctivas (implementado en repo)
+
+| ID | Estado |
+|----|--------|
+| C1 | **Mitigado** — `posts_public` / `PostPublic` sin autor; UI genérica |
+| C2 | **Mitigado** — `POST /api/posts` auth opcional + RPC `create_post_anonymous` |
+| C3 | **Mitigado** — `GET /api/posts`, `/api/posts/[id]`, `/api/zones`; RLS feed ampliado |
+| C4 | **Parcial** — lecturas públicas vía anon/`posts_public`; admin acotado a writes privilegiados |
+| C5 | **Mitigado** — mock auth solo con `ALLOW_MOCK_AUTH` + no production |
+| C6 | **Mitigado** — `lib/client/feed-categories.ts` + `app_settings.feed_category_map` |
+| C7–C10 | Pendientes (votos Reddit, grilla, rate-limit distribuido, CORS dashboard) |
+| C12 | **Parcial** — seed ampliado (Radial 26, Villa 1º de Mayo, 4to Anillo) |

@@ -33,7 +33,6 @@ vi.mock("@/lib/client/api", async () => {
     createPost: vi.fn(async () => ({
       post: {
         id: "p-new",
-        author_id: "u-1",
         zone_id: "11111111-1111-4111-8111-111111111111",
         type: "robo",
         status: "reportado",
@@ -45,6 +44,7 @@ vi.mock("@/lib/client/api", async () => {
         publish_gate: "published",
         created_at: "2026-11-03T00:00:00.000Z",
         updated_at: "2026-11-03T00:00:00.000Z",
+        vote_count: 0,
       },
       follow_up_code: "CUADRA-DEMO-TEST",
     })),

@@ -56,9 +56,19 @@ async function parseError(res: Response): Promise<ApiClientError> {
 
 /**
  * Usuario mock del store de Agente B (sin Supabase).
- * Solo se envía en cliente; no es un secreto.
+ * Solo si el servidor permite ALLOW_MOCK_AUTH (nunca en producción).
  */
 const DEV_MOCK_USER_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+
+function mockAuthHeaders(): Record<string, string> {
+  if (
+    process.env.NODE_ENV !== "production" &&
+    process.env.NEXT_PUBLIC_ALLOW_MOCK_AUTH === "true"
+  ) {
+    return { "X-Mock-User-Id": DEV_MOCK_USER_ID };
+  }
+  return {};
+}
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, {
@@ -68,7 +78,7 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
       ...(init?.body instanceof FormData
         ? {}
         : { "Content-Type": "application/json" }),
-      "X-Mock-User-Id": DEV_MOCK_USER_ID,
+      ...mockAuthHeaders(),
       ...init?.headers,
     },
   });

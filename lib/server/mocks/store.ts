@@ -77,12 +77,9 @@ function toPublic(post: Post): PostPublic {
   const vote_count = [...votes.values()].filter(
     (v) => v.post_id === post.id,
   ).length;
-  const author = post.author_id
-    ? profiles.get(post.author_id)
-    : undefined;
+  const { author_id: _omit, ...rest } = post;
   return {
-    ...post,
-    author_pseudonym: author?.pseudonym ?? null,
+    ...rest,
     vote_count,
   };
 }
@@ -100,7 +97,7 @@ export function mockListZones(): Zone[] {
 }
 
 export interface MockCreatePostInput {
-  author_id: string;
+  author_id: string | null;
   zone_id: string;
   type: IncidentType;
   title: string;
@@ -170,7 +167,34 @@ export function mockGetPost(id: string): Post | null {
 
 export function mockGetPostPublic(id: string): PostPublic | null {
   const post = posts.get(id);
-  return post ? toPublic(post) : null;
+  if (!post || post.publish_gate !== "published") return null;
+  return toPublic(post);
+}
+
+export function mockListPostsPublic(
+  query: {
+    zone_id?: string;
+    type?: IncidentType;
+    status?: Post["status"];
+    cursor?: string;
+  },
+  limit: number,
+): { posts: PostPublic[]; next_cursor: string | null } {
+  let list = [...posts.values()]
+    .filter((p) => p.publish_gate === "published")
+    .sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
+
+  if (query.zone_id) list = list.filter((p) => p.zone_id === query.zone_id);
+  if (query.type) list = list.filter((p) => p.type === query.type);
+  if (query.status) list = list.filter((p) => p.status === query.status);
+  if (query.cursor) {
+    list = list.filter((p) => p.created_at < query.cursor!);
+  }
+
+  const page = list.slice(0, limit);
+  const next =
+    list.length > limit ? (page[page.length - 1]?.created_at ?? null) : null;
+  return { posts: page.map(toPublic), next_cursor: next };
 }
 
 export function mockCreateVote(

@@ -2,11 +2,15 @@ import type {
   CreatePostResponse,
   CreateVoteResponse,
   IncidentType,
+  ListPostsQuery,
+  ListPostsResponse,
   PostPublic,
+  PostStatus,
 } from "@/lib/types";
 import {
   isSupabaseConfigured,
   getSupabaseAdmin,
+  getSupabaseAnon,
   getSupabaseForUser,
 } from "@/lib/server/supabase";
 import {
@@ -23,17 +27,97 @@ import {
   mockGetZoneById,
   mockIssueFollowUp,
   mockListMapReports,
+  mockListPostsPublic,
 } from "@/lib/server/mocks/store";
 import type { CreatePostParsed } from "@/lib/validation/posts";
 import { buildMapCells, type MapCellPublic } from "@/lib/server/grid";
+import { isPubliclyListed, toPostPublic } from "@/lib/server/public-post";
+
+const PUBLIC_SELECT =
+  "id, zone_id, type, status, title, body, grid_lat, grid_lng, is_establishment, publish_gate, created_at, updated_at, vote_count";
+
+export async function listPostsPublic(
+  query: ListPostsQuery,
+): Promise<ListPostsResponse> {
+  const limit = Math.min(Math.max(query.limit ?? 20, 1), 50);
+
+  if (!isSupabaseConfigured()) {
+    return mockListPostsPublic(query, limit);
+  }
+
+  try {
+    const client = getSupabaseAnon();
+    let q = client
+      .from("posts_public")
+      .select(PUBLIC_SELECT)
+      .order("created_at", { ascending: false })
+      .limit(limit + 1);
+
+    if (query.zone_id) q = q.eq("zone_id", query.zone_id);
+    if (query.type) q = q.eq("type", query.type);
+    if (query.status) q = q.eq("status", query.status);
+    if (query.cursor) q = q.lt("created_at", query.cursor);
+
+    const { data, error } = await q;
+    if (error || !data) return { posts: [], next_cursor: null };
+
+    const page = data.slice(0, limit);
+    const posts = page.map((row) => toPostPublic(row as Parameters<typeof toPostPublic>[0]));
+    const next =
+      data.length > limit
+        ? String(page[page.length - 1]?.created_at ?? null)
+        : null;
+    return { posts, next_cursor: next };
+  } catch {
+    return { posts: [], next_cursor: null };
+  }
+}
+
+export async function getPostPublicOrNull(
+  id: string,
+): Promise<PostPublic | null> {
+  if (!isSupabaseConfigured()) {
+    return mockGetPostPublic(id);
+  }
+  try {
+    const client = getSupabaseAnon();
+    const { data, error } = await client
+      .from("posts_public")
+      .select(PUBLIC_SELECT)
+      .eq("id", id)
+      .maybeSingle();
+    if (error || !data) return null;
+    return toPostPublic(data as Parameters<typeof toPostPublic>[0]);
+  } catch {
+    return null;
+  }
+}
+
+export async function listZones() {
+  if (!isSupabaseConfigured()) {
+    const { mockListZones } = await import("@/lib/server/mocks/store");
+    return mockListZones();
+  }
+  try {
+    const client = getSupabaseAnon();
+    const { data, error } = await client
+      .from("zones")
+      .select("id, slug, name, bbox, created_at")
+      .order("name", { ascending: true });
+    if (error || !data) return [];
+    return data;
+  } catch {
+    return [];
+  }
+}
 
 export async function createPost(
-  authorId: string,
+  authorId: string | null,
   data: CreatePostParsed,
   evidencePath: string | null,
   accessToken: string | null,
 ): Promise<CreatePostResponse | { error: "ZONE_NOT_FOUND" | "INTERNAL" }> {
-  if (!isSupabaseConfigured() || !accessToken) {
+  if (!isSupabaseConfigured()) {
     const zone = mockGetZoneById(data.zone_id);
     if (!zone) return { error: "ZONE_NOT_FOUND" };
     return mockCreatePost({
@@ -50,7 +134,6 @@ export async function createPost(
   }
 
   try {
-    const userClient = getSupabaseForUser(accessToken);
     const admin = getSupabaseAdmin();
 
     const { data: zone, error: zoneErr } = await admin
@@ -60,23 +143,36 @@ export async function createPost(
       .maybeSingle();
     if (zoneErr || !zone) return { error: "ZONE_NOT_FOUND" };
 
-    // RPC del Agente A: grilla + posts + reports_private + gate
-    const { data: post, error: postErr } = await userClient.rpc(
-      "create_post_with_private",
-      {
-        p_zone_id: data.zone_id,
-        p_type: data.type,
-        p_title: data.title,
-        p_body: data.body,
-        p_lat: data.lat,
-        p_lng: data.lng,
-        p_is_establishment: data.is_establishment,
-        p_evidence_path: evidencePath,
-        p_raw_notes: null,
-      },
-    );
+    const rpcArgs = {
+      p_zone_id: data.zone_id,
+      p_type: data.type,
+      p_title: data.title,
+      p_body: data.body,
+      p_lat: data.lat,
+      p_lng: data.lng,
+      p_is_establishment: data.is_establishment,
+      p_evidence_path: evidencePath,
+      p_raw_notes: null as string | null,
+    };
 
-    if (postErr || !post) return { error: "INTERNAL" };
+    let post: Record<string, unknown> | null = null;
+
+    if (accessToken && authorId) {
+      const userClient = getSupabaseForUser(accessToken);
+      const { data: created, error: postErr } = await userClient.rpc(
+        "create_post_with_private",
+        rpcArgs,
+      );
+      if (postErr || !created) return { error: "INTERNAL" };
+      post = created as Record<string, unknown>;
+    } else {
+      const { data: created, error: postErr } = await admin.rpc(
+        "create_post_anonymous",
+        rpcArgs,
+      );
+      if (postErr || !created) return { error: "INTERNAL" };
+      post = created as Record<string, unknown>;
+    }
 
     const code = generateFollowUpCode();
     const { error: codeErr } = await admin.from("follow_up_codes").insert({
@@ -86,11 +182,13 @@ export async function createPost(
     });
     if (codeErr) return { error: "INTERNAL" };
 
-    const publicPost: PostPublic = {
-      ...(post as PostPublic),
-      vote_count: 0,
+    return {
+      post: toPostPublic({
+        ...(post as Parameters<typeof toPostPublic>[0]),
+        vote_count: 0,
+      }),
+      follow_up_code: code,
     };
-    return { post: publicPost, follow_up_code: code };
   } catch {
     return { error: "INTERNAL" };
   }
@@ -109,14 +207,9 @@ export async function castVote(
 
   try {
     const userClient = getSupabaseForUser(accessToken);
-    const admin = getSupabaseAdmin();
 
-    const { data: post, error: postErr } = await admin
-      .from("posts")
-      .select("*")
-      .eq("id", postId)
-      .maybeSingle();
-    if (postErr || !post) return { error: "NOT_FOUND" };
+    const existing = await getPostPublicOrNull(postId);
+    if (!existing) return { error: "NOT_FOUND" };
 
     const { data: vote, error: voteErr } = await userClient
       .from("votes")
@@ -129,23 +222,11 @@ export async function castVote(
       return { error: "INTERNAL" };
     }
 
-    // El trigger on_vote_inserted del Agente A actualiza status
-    const { data: refreshed } = await admin
-      .from("posts")
-      .select("*")
-      .eq("id", postId)
-      .single();
-
-    const { data: countData } = await admin.rpc("vote_count", {
-      p_post_id: postId,
-    });
+    const refreshed = await getPostPublicOrNull(postId);
 
     return {
       vote: vote as CreateVoteResponse["vote"],
-      post: {
-        ...((refreshed ?? post) as PostPublic),
-        vote_count: (countData as number) ?? 1,
-      },
+      post: refreshed ?? existing,
     };
   } catch {
     return { error: "INTERNAL" };
@@ -172,7 +253,7 @@ export async function issueFollowUpCode(
       .eq("id", postId)
       .maybeSingle();
     if (error || !post) return { error: "NOT_FOUND" };
-    if (!canIssueFollowUpCode(post.status)) {
+    if (!canIssueFollowUpCode(post.status as PostStatus)) {
       return { error: "FORBIDDEN_STATUS" };
     }
 
@@ -194,13 +275,11 @@ export async function getMapCells(): Promise<MapCellPublic[]> {
     return buildMapCells(mockListMapReports());
   }
 
-  // TODO(contrato): reemplazar al integrar — pedir a A RPC map_cells_k_anonymous(k)
   try {
-    const admin = getSupabaseAdmin();
-    const { data, error } = await admin
-      .from("posts")
-      .select("grid_lat, grid_lng, type")
-      .eq("publish_gate", "published");
+    const client = getSupabaseAnon();
+    const { data, error } = await client
+      .from("posts_public")
+      .select("grid_lat, grid_lng, type");
     if (error || !data) return [];
     return buildMapCells(
       data.map((r) => ({
@@ -214,21 +293,9 @@ export async function getMapCells(): Promise<MapCellPublic[]> {
   }
 }
 
+/** @deprecated prefer getPostPublicOrNull */
 export async function getPostOrNull(id: string): Promise<PostPublic | null> {
-  if (!isSupabaseConfigured()) {
-    return mockGetPostPublic(id);
-  }
-  try {
-    const admin = getSupabaseAdmin();
-    const { data } = await admin
-      .from("posts")
-      .select("*")
-      .eq("id", id)
-      .maybeSingle();
-    return (data as PostPublic) ?? null;
-  } catch {
-    return null;
-  }
+  return getPostPublicOrNull(id);
 }
 
-export { mockGetPost };
+export { mockGetPost, isPubliclyListed };

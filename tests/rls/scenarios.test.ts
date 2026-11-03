@@ -24,15 +24,22 @@ describe("RLS escenarios (contrato Agente A)", () => {
   const author = "11111111-1111-4111-8111-111111111111";
   const other = "22222222-2222-4222-8222-222222222222";
 
-  const unpublished: PostRow = {
+  const gated: PostRow = {
     id: "p1",
+    author_id: author,
+    status: "reportado",
+    publish_gate: "pending_evidence",
+  };
+
+  const publishedFresh: PostRow = {
+    id: "p2",
     author_id: author,
     status: "reportado",
     publish_gate: "published",
   };
 
   const published: PostRow = {
-    id: "p2",
+    id: "p3",
     author_id: author,
     status: "corroborado",
     publish_gate: "published",
@@ -53,21 +60,22 @@ describe("RLS escenarios (contrato Agente A)", () => {
 
   it("editar el post de otro usuario debe fallar", () => {
     expect(
-      canUpdatePost({ role: "ciudadano", userId: other }, unpublished),
+      canUpdatePost({ role: "ciudadano", userId: other }, gated),
     ).toBe(false);
     expect(
-      canUpdatePost({ role: "ciudadano", userId: author }, unpublished),
+      canUpdatePost({ role: "ciudadano", userId: author }, gated),
     ).toBe(true);
     expect(
-      canUpdatePost({ role: "moderador", userId: other }, unpublished),
+      canUpdatePost({ role: "moderador", userId: other }, gated),
     ).toBe(true);
   });
 
-  it("leer posts no publicados siendo anónimo debe fallar", () => {
-    expect(canSelectPost({ role: "anon" }, unpublished)).toBe(false);
+  it("anon lee published (incluso reportado) y no lee gate pendiente", () => {
+    expect(canSelectPost({ role: "anon" }, gated)).toBe(false);
+    expect(canSelectPost({ role: "anon" }, publishedFresh)).toBe(true);
     expect(canSelectPost({ role: "anon" }, published)).toBe(true);
     expect(
-      canSelectPost({ role: "ciudadano", userId: author }, unpublished),
+      canSelectPost({ role: "ciudadano", userId: author }, gated),
     ).toBe(true);
   });
 

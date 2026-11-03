@@ -1,12 +1,11 @@
 import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
-import { requireAuth } from "@/lib/server/auth";
+import { optionalAuth } from "@/lib/server/auth";
 import {
   badRequest,
   internalError,
   piiNotAllowed,
   rateLimited,
-  unauthorized,
   validationError,
 } from "@/lib/server/errors";
 import {
@@ -14,10 +13,48 @@ import {
   validateAndStripEvidence,
 } from "@/lib/server/evidence";
 import { enforcePostRateLimits } from "@/lib/server/rate-limit";
-import { createPost } from "@/lib/server/posts-service";
+import { createPost, listPostsPublic } from "@/lib/server/posts-service";
+import { assertLiveServerConfig } from "@/lib/server/supabase";
 import { validateCreatePostInput } from "@/lib/validation/posts";
+import type { IncidentType, PostStatus } from "@/lib/types";
 
 export const runtime = "nodejs";
+
+/** Lectura pública del feed — sin auth (auditoría C3). */
+export async function GET(req: Request) {
+  try {
+    assertLiveServerConfig();
+    const url = new URL(req.url);
+    const zone_id = url.searchParams.get("zone_id") ?? undefined;
+    const type = (url.searchParams.get("type") as IncidentType | null) ?? undefined;
+    const status =
+      (url.searchParams.get("status") as PostStatus | null) ?? undefined;
+    const cursor = url.searchParams.get("cursor") ?? undefined;
+    const limitRaw = url.searchParams.get("limit");
+    const limit = limitRaw ? Number(limitRaw) : undefined;
+
+    if (limitRaw && (!Number.isFinite(limit) || (limit ?? 0) < 1)) {
+      return badRequest("limit inválido");
+    }
+
+    const result = await listPostsPublic({
+      zone_id,
+      type,
+      status,
+      cursor,
+      limit,
+    });
+
+    return NextResponse.json(result, {
+      status: 200,
+      headers: {
+        "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",
+      },
+    });
+  } catch (err) {
+    return internalError(err);
+  }
+}
 
 async function parseBody(req: Request): Promise<
   | { ok: true; json: Record<string, unknown>; evidence: File | null }
@@ -47,8 +84,7 @@ async function parseBody(req: Request): Promise<
         body: String(form.get("body") ?? ""),
         lat: latRaw != null ? Number(latRaw) : NaN,
         lng: lngRaw != null ? Number(lngRaw) : NaN,
-        is_establishment:
-          isEstRaw === "true" || isEstRaw === "1",
+        is_establishment: isEstRaw === "true" || isEstRaw === "1",
       },
     };
   }
@@ -61,12 +97,21 @@ async function parseBody(req: Request): Promise<
   }
 }
 
+/**
+ * Alta de reporte. Auth opcional:
+ * - Con sesión → create_post_with_private (author interno, no público)
+ * - Sin sesión → create_post_anonymous vía service role + rate limit IP
+ */
 export async function POST(req: Request) {
   try {
-    const auth = await requireAuth(req);
-    if (!auth) return unauthorized();
+    assertLiveServerConfig();
+    const auth = await optionalAuth(req);
 
-    const rl = enforcePostRateLimits(req, auth.id, "posts");
+    const rl = enforcePostRateLimits(
+      req,
+      auth?.id ?? "anon",
+      "posts",
+    );
     if (!rl.ok) return rateLimited(rl.retryAfterSec);
 
     const parsed = await parseBody(req);
@@ -93,10 +138,10 @@ export async function POST(req: Request) {
     }
 
     const result = await createPost(
-      auth.id,
+      auth?.id ?? null,
       validated.data,
       evidencePath,
-      auth.accessToken,
+      auth?.accessToken ?? null,
     );
     if ("error" in result) {
       if (result.error === "ZONE_NOT_FOUND") {
