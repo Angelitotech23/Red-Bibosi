@@ -5,6 +5,8 @@ import { mockGetProfileById } from "@/lib/server/mocks/store";
 export interface AuthUser {
   id: string;
   profile: Profile;
+  /** JWT de acceso; null en modo mock sin Supabase */
+  accessToken: string | null;
 }
 
 function extractBearer(req: Request): string | null {
@@ -25,7 +27,7 @@ export async function requireAuth(req: Request): Promise<AuthUser | null> {
     if (!mockId) return null;
     const profile = mockGetProfileById(mockId);
     if (!profile) return null;
-    return { id: profile.id, profile };
+    return { id: profile.id, profile, accessToken: null };
   }
 
   const token =
@@ -51,6 +53,7 @@ export async function requireAuth(req: Request): Promise<AuthUser | null> {
     return {
       id: data.user.id,
       profile: profile as Profile,
+      accessToken: token,
     };
   } catch {
     return null;

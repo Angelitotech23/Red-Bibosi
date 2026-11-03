@@ -40,7 +40,7 @@ export async function POST(req: Request, context: RouteContext) {
       return validationError("El voto debe ser { \"value\": 1 }.");
     }
 
-    const result = await castVote(id, auth.id);
+    const result = await castVote(id, auth.id, auth.accessToken);
     if ("error" in result) {
       if (result.error === "NOT_FOUND") return notFound("Caso no encontrado.");
       if (result.error === "CONFLICT") {

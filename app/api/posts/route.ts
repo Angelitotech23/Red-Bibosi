@@ -92,7 +92,12 @@ export async function POST(req: Request) {
       });
     }
 
-    const result = await createPost(auth.id, validated.data, evidencePath);
+    const result = await createPost(
+      auth.id,
+      validated.data,
+      evidencePath,
+      auth.accessToken,
+    );
     if ("error" in result) {
       if (result.error === "ZONE_NOT_FOUND") {
         return validationError("Zona inválida.");
