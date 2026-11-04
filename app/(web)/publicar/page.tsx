@@ -8,7 +8,7 @@ export default function PublicarPage() {
       <div className="section-head">
         <div>
           <h1>Publicar caso</h1>
-          <p className="muted" style={{ margin: "0.35rem 0 0" }}>
+          <p className="lede">
             Cuenta lo ocurrido sin nombres propios. La ubicación exacta solo
             viaja al servidor.
           </p>

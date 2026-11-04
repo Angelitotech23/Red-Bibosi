@@ -12,6 +12,13 @@ export const FEED_CATEGORY_LABELS: Record<FeedCategory, string> = {
   locales_boliches: "Locales y boliches nocturnos",
 };
 
+/** Forma corta para chips: evita corte en 360px sin cambiar el nombre en la tarjeta. */
+export const FEED_CATEGORY_CHIP_LABELS: Record<FeedCategory, string> = {
+  maleantes_robos: "Maleantes",
+  zonas_peligro_alumbrado: "Peligro",
+  locales_boliches: "Locales",
+};
+
 export const FEED_CATEGORY_TYPES: Record<FeedCategory, IncidentType[]> = {
   maleantes_robos: ["robo", "acoso"],
   zonas_peligro_alumbrado: ["vandalismo", "consumo_via_publica"],

@@ -55,7 +55,7 @@ export function LocationPicker({
 
   return (
     <div>
-      <p id={labelId} className="muted" style={{ margin: "0 0 0.5rem" }}>
+      <p id={labelId} className="muted field-help">
         Marca en el mapa el punto exacto del hecho. La ubicación precisa solo se
         envía al servidor; no se muestra en el foro.
       </p>
@@ -96,7 +96,7 @@ export function LocationPicker({
           ) : null}
         </div>
       </div>
-      <p id={`${labelId}-help`} className="muted" style={{ margin: "0.5rem 0 0" }}>
+      <p id={`${labelId}-help`} className="muted field-help">
         {value
           ? "Ubicación marcada. Puedes ajustar con clic o flechas del teclado."
           : "Aún no hay punto marcado."}

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import {
   ApiClientError,
@@ -42,6 +43,7 @@ export function PublishForm({ initialZoneId }: PublishFormProps) {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [followUpCode, setFollowUpCode] = useState<string | null>(null);
+  const [publishedPostId, setPublishedPostId] = useState<string | null>(null);
 
   async function loadZones() {
     setBootLoading(true);
@@ -133,6 +135,7 @@ export function PublishForm({ initialZoneId }: PublishFormProps) {
         evidence,
       });
       setFollowUpCode(res.follow_up_code);
+      setPublishedPostId(res.post.id);
       setTitle("");
       setBody("");
       setPhoto(null);
@@ -164,27 +167,31 @@ export function PublishForm({ initialZoneId }: PublishFormProps) {
           <strong>Caso enviado.</strong> Guarda tu código de seguimiento: no se
           vuelve a mostrar.
         </div>
-        <p
-          style={{
-            fontFamily: "var(--cuadra-font-display)",
-            fontSize: "1.4rem",
-            letterSpacing: "0.04em",
-            margin: 0,
-          }}
-        >
-          {followUpCode}
-        </p>
-        <p className="muted" style={{ margin: 0 }}>
+        <p className="follow-code">{followUpCode}</p>
+        <p className="muted">
           Con este código puedes consultar el estado en Seguimiento, sin iniciar
           sesión.
         </p>
-        <button
-          type="button"
-          className="btn btn-secondary"
-          onClick={() => setFollowUpCode(null)}
-        >
-          Publicar otro caso
-        </button>
+        <div className="empty-panel__actions">
+          {publishedPostId ? (
+            <Link
+              className="btn btn-accent"
+              href={`/inicio?publicado=${encodeURIComponent(publishedPostId)}`}
+            >
+              Ver en el feed
+            </Link>
+          ) : null}
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => {
+              setFollowUpCode(null);
+              setPublishedPostId(null);
+            }}
+          >
+            Publicar otro caso
+          </button>
+        </div>
       </div>
     );
   }
@@ -301,7 +308,7 @@ export function PublishForm({ initialZoneId }: PublishFormProps) {
           accept="image/*"
           onChange={(e) => setPhoto(e.target.files?.[0] ?? null)}
         />
-        <p className="muted" style={{ margin: 0, fontSize: "0.88rem" }}>
+        <p className="muted">
           Antes de subir, eliminamos los metadatos de la imagen (incluye datos
           de ubicación embebidos).
         </p>

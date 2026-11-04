@@ -7,7 +7,8 @@ export function ErrorState({
 }) {
   return (
     <div className="error-panel" role="alert">
-      <p style={{ margin: "0 0 0.65rem" }}>{message}</p>
+      <p className="error-panel__kicker">No se pudo completar</p>
+      <p className="error-panel__text">{message}</p>
       {onRetry ? (
         <button type="button" className="btn btn-secondary" onClick={onRetry}>
           Reintentar

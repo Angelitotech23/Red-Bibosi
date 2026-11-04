@@ -1,22 +1,11 @@
-import { ZoneList } from "@/components/ZoneList";
+import { Suspense } from "react";
+import { CommunityFeed } from "@/components/CommunityFeed";
+import { LoadingState } from "@/components/LoadingState";
 
 export default function InicioPage() {
   return (
-    <div>
-      <section className="hero-block" aria-labelledby="brand-hero">
-        <h1 id="brand-hero">Cuadra</h1>
-        <p>
-          Foro ciudadano de seguridad y convivencia por zona en Santa Cruz.
-          Elige tu barrio para ver y publicar casos.
-        </p>
-      </section>
-
-      <section aria-labelledby="zonas-title">
-        <div className="section-head">
-          <h2 id="zonas-title">Zonas</h2>
-        </div>
-        <ZoneList />
-      </section>
-    </div>
+    <Suspense fallback={<LoadingState label="Cargando denuncias…" variant="feed" />}>
+      <CommunityFeed />
+    </Suspense>
   );
 }

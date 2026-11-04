@@ -58,15 +58,13 @@ export function FollowUpLookup() {
 
       {post ? (
         <div className="state-panel" role="status">
-          <div className="meta-row" style={{ marginBottom: "0.5rem" }}>
+          <div className="meta-row">
             <TypeBadge type={post.type} />
             <StatusBadge status={post.status} />
             <span>{formatCaseDate(post.updated_at)}</span>
           </div>
-          <h2 style={{ margin: "0 0 0.4rem", fontSize: "1.25rem" }}>
-            {post.title}
-          </h2>
-          <p className="muted" style={{ marginTop: 0 }}>
+          <h2 className="subhead">{post.title}</h2>
+          <p className="muted">
             Estado actual del caso. No se muestran datos privados ni ubicación
             exacta.
           </p>

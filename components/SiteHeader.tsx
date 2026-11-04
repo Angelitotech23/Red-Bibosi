@@ -1,14 +1,32 @@
 "use client";
 
 import Link from "next/link";
+import { Suspense } from "react";
 import { usePathname } from "next/navigation";
+import { HeaderSearch } from "@/components/HeaderSearch";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const LINKS = [
   { href: "/inicio", label: "Inicio" },
   { href: "/mapa", label: "Mapa" },
-  { href: "/publicar", label: "Publicar" },
   { href: "/seguimiento", label: "Seguimiento" },
 ] as const;
+
+function SearchFallback() {
+  return (
+    <div className="header-search">
+      <label className="sr-only" htmlFor="site-search-fallback">
+        Buscar denuncias
+      </label>
+      <input
+        id="site-search-fallback"
+        type="search"
+        placeholder="Buscar en el feed"
+        disabled
+      />
+    </div>
+  );
+}
 
 export function SiteHeader() {
   const pathname = usePathname();
@@ -19,7 +37,12 @@ export function SiteHeader() {
         <Link href="/inicio" className="brand-mark">
           Cuadra<span>.</span>
         </Link>
-        <nav aria-label="Principal">
+
+        <Suspense fallback={<SearchFallback />}>
+          <HeaderSearch />
+        </Suspense>
+
+        <nav aria-label="Principal" className="header-nav">
           <ul className="nav-links">
             {LINKS.map((link) => {
               const current =
@@ -38,6 +61,13 @@ export function SiteHeader() {
             })}
           </ul>
         </nav>
+
+        <div className="header-actions">
+          <ThemeToggle />
+          <Link className="btn btn-accent header-cta" href="/publicar">
+            Nueva denuncia
+          </Link>
+        </div>
       </div>
     </header>
   );

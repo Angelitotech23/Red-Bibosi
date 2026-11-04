@@ -5,7 +5,6 @@ import { useCallback, useEffect, useState, type FormEvent } from "react";
 import {
   ApiClientError,
   createComment,
-  createVote,
   fetchComments,
   fetchOfficialResponse,
   fetchPost,
@@ -21,6 +20,7 @@ import { ErrorState } from "@/components/ErrorState";
 import { LoadingState } from "@/components/LoadingState";
 import { StatusBadge } from "@/components/StatusBadge";
 import { TypeBadge } from "@/components/TypeBadge";
+import { VoteControl } from "@/components/VoteControl";
 
 export function CaseDetail({ postId }: { postId: string }) {
   const [post, setPost] = useState<PostPublic | null>(null);
@@ -28,9 +28,6 @@ export function CaseDetail({ postId }: { postId: string }) {
   const [official, setOfficial] = useState<OfficialResponsePublic | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const [voteBusy, setVoteBusy] = useState(false);
-  const [voteError, setVoteError] = useState<string | null>(null);
 
   const [commentBody, setCommentBody] = useState("");
   const [commentBusy, setCommentBusy] = useState(false);
@@ -93,23 +90,6 @@ export function CaseDetail({ postId }: { postId: string }) {
     return unsubscribe;
   }, [postId, refreshComments, refreshPost]);
 
-  async function onVote() {
-    setVoteBusy(true);
-    setVoteError(null);
-    try {
-      const res = await createVote(postId);
-      setPost(res.post);
-    } catch (e) {
-      const msg =
-        e instanceof ApiClientError
-          ? e.message
-          : "No se pudo registrar tu corroboración.";
-      setVoteError(msg);
-    } finally {
-      setVoteBusy(false);
-    }
-  }
-
   async function onComment(e: FormEvent) {
     e.preventDefault();
     setCommentBusy(true);
@@ -151,44 +131,30 @@ export function CaseDetail({ postId }: { postId: string }) {
         <span className="muted">reporte anónimo</span>
       </div>
 
-      <h1
-        style={{
-          margin: 0,
-          fontFamily: "var(--cuadra-font-display)",
-          fontSize: "clamp(1.6rem, 4vw, 2.2rem)",
-          color: "var(--cuadra-brand)",
-        }}
-      >
-        {post.title}
-      </h1>
+      <h1 className="case-title">{post.title}</h1>
 
       <p className="case-body">{post.body}</p>
 
-      <div className="stack" style={{ maxWidth: "18rem" }}>
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={() => void onVote()}
-          disabled={voteBusy}
-          aria-describedby="vote-help"
-        >
-          {voteBusy
-            ? "Registrando…"
-            : `Corroborar (${post.vote_count ?? 0})`}
-        </button>
-        <p id="vote-help" className="muted" style={{ margin: 0, fontSize: "0.88rem" }}>
+      <div className="case-vote">
+        <VoteControl
+          postId={postId}
+          count={post.vote_count ?? 0}
+          onVoted={setPost}
+          describedBy="vote-help"
+          labeled
+        />
+        <p id="vote-help" className="muted">
           Un voto por persona. Ayuda a confirmar que el hecho ocurrió.
         </p>
-        {voteError ? <ErrorState message={voteError} /> : null}
       </div>
 
       {official ? (
         <section className="official-box" aria-labelledby="official-title">
-          <h2 id="official-title" style={{ margin: "0 0 0.4rem", fontSize: "1.1rem" }}>
+          <h2 id="official-title" className="subhead">
             Respuesta oficial
           </h2>
-          <p style={{ margin: "0 0 0.5rem" }}>{official.body}</p>
-          <p className="muted" style={{ margin: 0, fontSize: "0.88rem" }}>
+          <p className="official-box__body">{official.body}</p>
+          <p className="muted">
             Autoridad · {formatCaseDate(official.created_at)} · estado:{" "}
             <StatusBadge status={official.status_after} />
           </p>
@@ -196,7 +162,7 @@ export function CaseDetail({ postId }: { postId: string }) {
       ) : null}
 
       <section aria-labelledby="comments-title">
-        <h2 id="comments-title" style={{ fontSize: "1.2rem" }}>
+        <h2 id="comments-title" className="subhead">
           Comentarios
         </h2>
         {comments.length === 0 ? (
@@ -207,7 +173,7 @@ export function CaseDetail({ postId }: { postId: string }) {
               <li key={c.id} className="comment-item">
                 <strong>Vecino</strong>
                 <span className="muted"> · {formatCaseDate(c.created_at)}</span>
-                <p style={{ margin: "0.35rem 0 0" }}>{c.body}</p>
+                <p className="comment-item__body">{c.body}</p>
               </li>
             ))}
           </ul>
@@ -215,7 +181,6 @@ export function CaseDetail({ postId }: { postId: string }) {
 
         <form
           className="comment-form"
-          style={{ marginTop: "1rem" }}
           onSubmit={(e) => void onComment(e)}
         >
           <div className="field">
@@ -240,7 +205,7 @@ export function CaseDetail({ postId }: { postId: string }) {
       </section>
 
       <p>
-        <Link href="/inicio">← Volver a zonas</Link>
+        <Link href="/inicio">← Volver al feed</Link>
       </p>
     </article>
   );

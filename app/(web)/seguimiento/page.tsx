@@ -3,10 +3,10 @@ import { FollowUpLookup } from "@/components/FollowUpLookup";
 export default function SeguimientoPage() {
   return (
     <div>
-      <div className="section-head page-narrow" style={{ maxWidth: "720px" }}>
+      <div className="section-head page-narrow">
         <div>
           <h1>Seguimiento</h1>
-          <p className="muted" style={{ margin: "0.35rem 0 0" }}>
+          <p className="lede">
             Consulta el estado de tu caso con el código. No necesitas iniciar
             sesión.
           </p>

@@ -14,15 +14,24 @@ const outfit = Outfit({
 });
 
 export const metadata = {
-  title: "Cuadra",
+  title: "Cuadra — Red Bibosi",
   description:
-    "Foro ciudadano de seguridad y convivencia por zona — Santa Cruz, Bolivia",
+    "Foro ciudadano de denuncias vecinales en Santa Cruz de la Sierra, Bolivia",
 };
+
+const THEME_INIT = `(function(){try{var t=localStorage.getItem('cuadra-theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();`;
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="es-BO" className={`${fraunces.variable} ${outfit.variable}`}>
-      <body>{children}</body>
+    <html
+      lang="es-BO"
+      className={`${fraunces.variable} ${outfit.variable}`}
+      suppressHydrationWarning
+    >
+      <body>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT }} />
+        {children}
+      </body>
     </html>
   );
 }

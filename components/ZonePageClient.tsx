@@ -54,12 +54,16 @@ export function ZonePageClient({ slug }: { slug: string }) {
       <div className="section-head">
         <div>
           <h1>{zone.name}</h1>
-          <p className="muted" style={{ margin: "0.35rem 0 0" }}>
+          <p className="lede">
             Casos publicados en esta zona. Filtra por tipo o estado.
           </p>
         </div>
       </div>
-      <CaseThreadList zoneId={zone.id} zoneSlug={zone.slug} />
+      <CaseThreadList
+        zoneId={zone.id}
+        zoneSlug={zone.slug}
+        zoneName={zone.name}
+      />
     </div>
   );
 }

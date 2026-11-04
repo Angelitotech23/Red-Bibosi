@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { ApiClientError, fetchPosts } from "@/lib/client/api";
-import { formatCaseDate } from "@/lib/client/format";
 import {
   INCIDENT_TYPE_LABELS,
   INCIDENT_TYPES,
@@ -11,23 +10,27 @@ import {
   POST_STATUSES,
 } from "@/lib/client/labels";
 import type { IncidentType, PostPublic, PostStatus } from "@/lib/types";
+import { ChipRow } from "@/components/ChipRow";
+import { EmptyState } from "@/components/EmptyState";
 import { ErrorState } from "@/components/ErrorState";
 import { LoadingState } from "@/components/LoadingState";
-import { StatusBadge } from "@/components/StatusBadge";
-import { TypeBadge } from "@/components/TypeBadge";
+import { ReportCard } from "@/components/ReportCard";
 
 export function CaseThreadList({
   zoneId,
   zoneSlug,
+  zoneName,
 }: {
   zoneId: string;
   zoneSlug: string;
+  zoneName: string;
 }) {
   const [type, setType] = useState<IncidentType | "">("");
   const [status, setStatus] = useState<PostStatus | "">("");
   const [posts, setPosts] = useState<PostPublic[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [filterKey, setFilterKey] = useState(0);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -55,79 +58,84 @@ export function CaseThreadList({
     void load();
   }, [load]);
 
+  useEffect(() => {
+    setFilterKey((key) => key + 1);
+  }, [type, status]);
+
+  const hasFilters = Boolean(type || status);
+  const publishHref = `/publicar?zona=${encodeURIComponent(zoneSlug)}`;
+
   return (
     <div>
-      <div className="filters" role="search" aria-label="Filtros de casos">
-        <div className="field">
-          <label htmlFor="filter-type">Tipo</label>
-          <select
-            id="filter-type"
-            value={type}
-            onChange={(e) => setType(e.target.value as IncidentType | "")}
-          >
-            <option value="">Todos</option>
-            {INCIDENT_TYPES.map((t) => (
-              <option key={t} value={t}>
-                {INCIDENT_TYPE_LABELS[t]}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="field">
-          <label htmlFor="filter-status">Estado</label>
-          <select
-            id="filter-status"
-            value={status}
-            onChange={(e) => setStatus(e.target.value as PostStatus | "")}
-          >
-            <option value="">Todos</option>
-            {POST_STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {POST_STATUS_LABELS[s]}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div style={{ alignSelf: "end" }}>
-          <Link
-            className="btn btn-accent"
-            href={`/publicar?zona=${encodeURIComponent(zoneSlug)}`}
-          >
-            Publicar caso
-          </Link>
-        </div>
+      <div className="feed-toolbar" role="search" aria-label="Filtros de casos">
+        <ChipRow
+          label="Tipo"
+          allLabel="Todos"
+          value={type}
+          onChange={setType}
+          options={INCIDENT_TYPES.map((item) => ({
+            value: item,
+            label: INCIDENT_TYPE_LABELS[item],
+          }))}
+        />
+        <ChipRow
+          label="Estado"
+          allLabel="Todos"
+          value={status}
+          onChange={setStatus}
+          options={POST_STATUSES.map((item) => ({
+            value: item,
+            label: POST_STATUS_LABELS[item],
+          }))}
+        />
+        <p className="feed-toolbar__note">
+          <Link href={publishHref}>Publicar en esta zona</Link>
+        </p>
       </div>
 
-      {loading ? <LoadingState label="Cargando hilos…" /> : null}
+      {loading ? <LoadingState label="Cargando denuncias…" variant="feed" /> : null}
       {!loading && error ? (
         <ErrorState message={error} onRetry={() => void load()} />
       ) : null}
       {!loading && !error && posts.length === 0 ? (
-        <div className="state-panel">
-          No hay casos publicados con estos filtros.
-        </div>
+        <EmptyState
+          title={
+            hasFilters
+              ? "No hay casos con estos filtros"
+              : `Aún no hay casos en ${zoneName}`
+          }
+          message="Publica lo que viste en esta zona, sin nombres propios."
+          actionHref={publishHref}
+          actionLabel="Nueva denuncia"
+          onClear={
+            hasFilters
+              ? () => {
+                  setType("");
+                  setStatus("");
+                }
+              : undefined
+          }
+        />
       ) : null}
       {!loading && !error && posts.length > 0 ? (
-        <ul className="thread-list">
-          {posts.map((post) => (
-            <li key={post.id} className="thread-item">
-              <div className="vote-col" aria-label="Corroboraciones">
-                <span aria-hidden="true">▲</span>
-                <span>{post.vote_count ?? 0}</span>
-              </div>
-              <div>
-                <Link className="title" href={`/caso/${post.id}`}>
-                  {post.title}
-                </Link>
-                <div className="meta-row">
-                  <TypeBadge type={post.type} />
-                  <StatusBadge status={post.status} />
-                  <span>{formatCaseDate(post.created_at)}</span>
-                </div>
-              </div>
-            </li>
+        <div className="feed-list" key={filterKey}>
+          {posts.map((post, index) => (
+            <ReportCard
+              key={post.id}
+              post={post}
+              zoneName={zoneName}
+              zoneSlug={zoneSlug}
+              index={index}
+              onVoted={(updated) =>
+                setPosts((current) =>
+                  current.map((item) =>
+                    item.id === updated.id ? updated : item,
+                  ),
+                )
+              }
+            />
           ))}
-        </ul>
+        </div>
       ) : null}
     </div>
   );

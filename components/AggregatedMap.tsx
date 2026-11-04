@@ -71,7 +71,7 @@ export function AggregatedMap({ cells }: { cells: MapCellPublic[] }) {
         <span>3–4</span>
         <span>5+</span>
       </div>
-      <p className="muted" style={{ marginTop: "0.75rem" }}>
+      <p className="muted field-help">
         Solo se muestran conteos por celda agregada. No hay marcadores de casos
         individuales ni coordenadas exactas.
       </p>
