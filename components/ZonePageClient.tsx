@@ -54,8 +54,8 @@ export function ZonePageClient({ slug }: { slug: string }) {
       <div className="section-head">
         <div>
           <h1>{zone.name}</h1>
-          <p className="muted" style={{ margin: "0.35rem 0 0" }}>
-            Casos publicados en esta zona. Filtra por tipo o estado.
+          <p className="muted" style={{ margin: "var(--space-2) 0 0" }}>
+            Denuncias de este distrito. Filtra por categoría.
           </p>
         </div>
       </div>

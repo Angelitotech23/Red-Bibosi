@@ -1,21 +1,35 @@
-import { ZoneList } from "@/components/ZoneList";
+import { Suspense } from "react";
+import Link from "next/link";
+import { CommunityFeed } from "@/components/CommunityFeed";
+import { FeedSkeleton } from "@/components/FeedSkeleton";
 
 export default function InicioPage() {
   return (
-    <div>
+    <div className="page-narrow">
       <section className="hero-block" aria-labelledby="brand-hero">
-        <h1 id="brand-hero">Cuadra</h1>
+        <p className="brand-kicker">Santa Cruz de la Sierra</p>
+        <h1 id="brand-hero">Red Bibosi</h1>
         <p>
-          Foro ciudadano de seguridad y convivencia por zona en Santa Cruz.
-          Elige tu barrio para ver y publicar casos.
+          Denuncias vecinales anónimas: lee rápido, filtra por barrio y actúa
+          con seguridad.
         </p>
+        <div className="hero-actions">
+          <a className="btn btn-secondary" href="#feed-title">
+            Ver denuncias
+          </a>
+          <Link className="btn btn-ghost" href="/mapa">
+            Mapa
+          </Link>
+        </div>
       </section>
 
-      <section aria-labelledby="zonas-title">
+      <section aria-labelledby="feed-title">
         <div className="section-head">
-          <h2 id="zonas-title">Zonas</h2>
+          <h2 id="feed-title">Feed ciudadano</h2>
         </div>
-        <ZoneList />
+        <Suspense fallback={<FeedSkeleton />}>
+          <CommunityFeed />
+        </Suspense>
       </section>
     </div>
   );

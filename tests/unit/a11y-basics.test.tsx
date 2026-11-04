@@ -7,15 +7,17 @@ import { LocationPicker } from "@/components/LocationPicker";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/inicio",
+  useRouter: () => ({ push: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 describe("accesibilidad básica", () => {
-  it("el encabezado expone navegación etiquetada y enlace de marca", () => {
+  it("el encabezado expone navegación, búsqueda y CTA de denuncia", () => {
     render(<SiteHeader />);
     expect(
       screen.getByRole("navigation", { name: /principal/i }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /cuadra/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /bibosi/i })).toHaveAttribute(
       "href",
       "/inicio",
     );
@@ -23,6 +25,12 @@ describe("accesibilidad básica", () => {
       "aria-current",
       "page",
     );
+    expect(
+      screen.getByRole("search", { name: /buscar denuncias/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /nueva denuncia/i }),
+    ).toHaveAttribute("href", "/publicar");
   });
 
   it("el badge de estado es texto legible, no solo color", () => {

@@ -14,9 +14,9 @@ const outfit = Outfit({
 });
 
 export const metadata = {
-  title: "Cuadra",
+  title: "Red Bibosi",
   description:
-    "Foro ciudadano de seguridad y convivencia por zona — Santa Cruz, Bolivia",
+    "Foro ciudadano de denuncias vecinales anónimas — Santa Cruz de la Sierra, Bolivia",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
