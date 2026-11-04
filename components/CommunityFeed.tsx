@@ -120,6 +120,11 @@ export function CommunityFeed() {
         </p>
       </header>
 
+      <p className="demo-banner" role="status">
+        Casos de demostración. Los relatos son inventados para mostrar cómo se
+        ve el foro, sin datos personales reales.
+      </p>
+
       {publishedId ? (
         <p className="confirm-banner" role="status">
           Tu denuncia ya está visible en el feed.

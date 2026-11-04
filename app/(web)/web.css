@@ -739,6 +739,15 @@ a:hover {
   box-shadow: var(--shadow-md);
 }
 
+.demo-banner {
+  margin: 0 0 var(--space-16);
+  padding: var(--space-12) var(--space-16);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-accent) 16%, var(--color-surface));
+  color: var(--color-ink);
+  animation: fade-in var(--dur-filter) var(--ease-in);
+}
+
 .confirm-banner,
 .success-banner {
   margin: 0 0 var(--space-16);
@@ -1044,12 +1053,7 @@ a:hover {
   position: relative;
   border-radius: var(--radius-md);
   overflow: hidden;
-  background:
-    radial-gradient(
-      80% 70% at 30% 25%,
-      var(--color-surface) 0%,
-      var(--color-bg-muted) 70%
-    );
+  background: #1b2838;
   min-height: 360px;
   box-shadow: var(--shadow-sm);
 }
@@ -1065,6 +1069,69 @@ a:hover {
 
 .map-canvas[data-readonly="true"] {
   cursor: default;
+}
+
+.city-map {
+  position: relative;
+  background: #1b2838;
+}
+
+.city-map--pick {
+  cursor: crosshair;
+}
+
+.city-map__leaflet {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.city-map__leaflet .leaflet-container {
+  height: 100%;
+  width: 100%;
+  background: #1b2838;
+  font-family: inherit;
+}
+
+.city-map__leaflet .leaflet-control-attribution {
+  background: rgba(16, 23, 20, 0.72);
+  color: #d6dee6;
+  font-size: 0.7rem;
+}
+
+.city-map__leaflet .leaflet-control-attribution a {
+  color: #f2ead8;
+}
+
+.city-map__leaflet .leaflet-popup-content-wrapper,
+.city-map__leaflet .leaflet-popup-tip {
+  background: var(--color-surface);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-md);
+}
+
+.city-map__leaflet .leaflet-bar a {
+  background: var(--color-surface);
+  color: var(--color-ink);
+  border-bottom-color: var(--color-line);
+}
+
+.city-map__pin {
+  width: 18px;
+  height: 18px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background: var(--color-accent);
+  border: 2px solid var(--color-surface);
+}
+
+.city-map__fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background:
+    radial-gradient(70% 60% at 42% 38%, #243246 0%, #1b2838 72%),
+    linear-gradient(180deg, #1b2838 0%, #121820 100%);
 }
 
 .map-pin {

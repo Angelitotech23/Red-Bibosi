@@ -113,17 +113,19 @@ async function runMock<T>(fn: () => Promise<T>): Promise<T> {
 async function liveWithMockFallback<T>(
   live: () => Promise<T>,
   mock: () => Promise<T>,
+  isEmpty?: (value: T) => boolean,
 ): Promise<T> {
   if (getApiMode() === "mock") {
     return runMock(mock);
   }
   try {
-    return await live();
-  } catch (e) {
-    if (e instanceof ApiClientError && e.status === 404) {
+    const value = await live();
+    if (isEmpty?.(value)) {
       return runMock(mock);
     }
-    throw e;
+    return value;
+  } catch {
+    return runMock(mock);
   }
 }
 
@@ -131,6 +133,7 @@ export async function fetchZones(): Promise<ZonesResponse> {
   return liveWithMockFallback(
     () => apiFetch<ZonesResponse>("/api/zones"),
     mockGetZones,
+    (res) => res.zones.length === 0,
   );
 }
 
@@ -159,6 +162,7 @@ export async function fetchPosts(params: {
         cursor: params.cursor,
         limit: params.limit,
       }),
+    (res) => res.posts.length === 0,
   );
 }
 
@@ -303,6 +307,7 @@ export async function fetchMapCells(): Promise<{ cells: MapCellPublic[] }> {
     () =>
       apiFetch<{ cells: MapCellPublic[]; k_threshold?: number }>("/api/map"),
     mockGetMapCells,
+    (res) => res.cells.length === 0,
   );
 }
 
