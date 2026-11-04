@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ApiClientError, fetchPosts, fetchZones } from "@/lib/client/api";
+import { alignPostsToZones } from "@/lib/client/align-demo-posts";
 import {
   FEED_CATEGORIES,
   FEED_CATEGORY_CHIP_LABELS,
@@ -49,10 +50,10 @@ export function CommunityFeed() {
     try {
       const [zonesRes, postsRes] = await Promise.all([
         fetchZones(),
-        fetchPosts({ limit: 30 }),
+        fetchPosts({ limit: 50 }),
       ]);
       setZones(zonesRes.zones);
-      setPosts(postsRes.posts);
+      setPosts(alignPostsToZones(postsRes.posts, zonesRes.zones));
     } catch (e) {
       const msg =
         e instanceof ApiClientError

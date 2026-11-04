@@ -1089,8 +1089,13 @@ a:hover {
 .city-map__leaflet .leaflet-container {
   height: 100%;
   width: 100%;
-  background: #1b2838;
+  background: #111820;
   font-family: inherit;
+}
+
+.city-map__leaflet .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) saturate(0.45) brightness(0.92)
+    contrast(1.08);
 }
 
 .city-map__leaflet .leaflet-control-attribution {
